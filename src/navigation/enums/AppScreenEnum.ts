@@ -8,6 +8,8 @@ enum AppScreenEnum {
     REPORT_NAVIGATOR = 'ReportNavigator',
     SETTING_NAVIGATOR = 'SettingNavigator',
     WAREHOUSE_SCREEN = 'WarehouseScreen',
+    EXPENDITURE_SCREEN = 'ExpenditureScreen',
+    INCOME_SCREEN = 'IncomeScreen',
 }
 
 export default AppScreenEnum;

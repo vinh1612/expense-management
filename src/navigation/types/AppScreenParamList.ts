@@ -10,6 +10,8 @@ type AppScreenParamList = {
   [AppScreenEnum.REPORT_NAVIGATOR]: undefined;
   [AppScreenEnum.SETTING_NAVIGATOR]: undefined;
   [AppScreenEnum.WAREHOUSE_SCREEN]: undefined;
+  [AppScreenEnum.EXPENDITURE_SCREEN]: undefined;
+  [AppScreenEnum.INCOME_SCREEN]: undefined;
 };
 
 export default AppScreenParamList;

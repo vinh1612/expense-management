@@ -17,17 +17,16 @@ const ExpenseNavigator = () => {
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
-        tabBarShowLabel: false
       }}
       tabBar={props => <CustomExpenseTabBar {...props} />}
     >
       <Tab.Screen
-        name={AppScreenEnum.TRANSACTION_BOOK_NAVIGATOR}
-        component={TransactionScreen}
-      />
-      <Tab.Screen
         name={AppScreenEnum.WALLET_NAVIGATOR}
         component={WalletScreen}
+      />
+      <Tab.Screen
+        name={AppScreenEnum.TRANSACTION_BOOK_NAVIGATOR}
+        component={TransactionScreen}
       />
       <Tab.Screen
         name={AppScreenEnum.TRANSACTION_BOOK_ADD_NAVIGATOR}

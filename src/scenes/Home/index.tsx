@@ -1,7 +1,6 @@
 import { Image, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 import React from 'react';
 import AppScreenEnum from '../../navigation/enums/AppScreenEnum';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 const HomeScreen = ({ navigation }: any) => {
     
@@ -13,7 +12,7 @@ const HomeScreen = ({ navigation }: any) => {
                     onPress={() => navigation.push(AppScreenEnum.EXPENSE_NAVIGATOR)}
                 >
                     <View>
-                        <Image source={require('../../assets/images/expense-banner.png')} className='mb-2 w-36 h-36'/>
+                        <Image source={require('../../assets/images/expense-banner.png')} className='w-full mb-2 h-36' resizeMode='center'/>
                         <Text className='font-bold text-center text-gray-700'>Chi tiêu</Text>
                     </View>
                 </TouchableOpacity>
@@ -22,7 +21,7 @@ const HomeScreen = ({ navigation }: any) => {
                     onPress={() => navigation.push(AppScreenEnum.WAREHOUSE_NAVIGATOR)}
                 >
                     <View>
-                        <Image source={require('../../assets/images/4.png')} className='mb-2 w-36 h-36'/>
+                        <Image source={require('../../assets/images/4.png')} className='w-full mb-2 h-36' resizeMode='center'/>
                         <Text className='font-bold text-center text-gray-700'>Kho hàng</Text>
                     </View>
                 </TouchableOpacity>
