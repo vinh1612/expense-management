@@ -14,18 +14,22 @@ import AppScreenEnum from '../../../navigation/enums/AppScreenEnum';
 import ModalTransactionType from './components/ModalTransactionType';
 import ButtonComponent from '../../../components/ButtonComponent';
 import { showToast } from '../../../utils/ToastUtils';
+import ModalTransactionSource from './components/ModalTransactionSource';
+import { TRANSACTION_SOURCE } from '../../../constants/Constant';
+import ArrowIcon from '../../../assets/svgIcons/ArrowIcon';
 
-const TransactionAddScreen = ({ navigation, route }: any) => {
+const TransactionAddScreen = ({ navigation }: any) => {
 
   const [transactionType, setTransactionType] = React.useState(new TransactionCategory());
-  const [transactionName, setTransactionName] = React.useState('');
+  const [transactionSource, setTransactionSource] = React.useState(TRANSACTION_SOURCE.CASH);
   const [transactionAmount, setTransactionAmount] = React.useState(0);
   const [transactionTime, setTransactionTime] = React.useState(getTodayDate()); // For display input text
   const [transactionDate, setTransactionDate] = React.useState(new Date()); // For DateTimePicker selected value
   const [transactionNote, setTransactionNote] = React.useState('');
 
   const [showDatePicker, setShowDatePicker] = React.useState(false);
-  const [modalVisible, setModalVisible] = React.useState(false);
+  const [isShowModalType, setIsShowModalType] = React.useState(false);
+  const [isShowModalSource, setIsShowModalSource] = React.useState(false);
 
   interface ViewInputLabel {
     contentLabel: string;
@@ -36,15 +40,23 @@ const TransactionAddScreen = ({ navigation, route }: any) => {
     maxLength?: number;
     style?: TextStyle;
     isRequired?: boolean;
-    icon?: ImageRequireSource
+    icon?: React.ReactNode
     readonly?: boolean;
+    placeholder?: string;
   }
 
   function renderViewInputLabel({
-    contentLabel, onChangeText, value,
-    inputMode, maxLength, style,
-    isRequired = true, icon,
-    readonly, onPressButton
+    contentLabel,
+    value,
+    inputMode,
+    maxLength,
+    style,
+    isRequired = true,
+    placeholder,
+    icon,
+    readonly,
+    onPressButton,
+    onChangeText
   }: ViewInputLabel) {
     return (
       icon ? (
@@ -52,7 +64,7 @@ const TransactionAddScreen = ({ navigation, route }: any) => {
           className='p-3 bg-gray-700 border border-gray-600 rounded-lg'
           onPress={onPressButton}
         >
-          <Text className='text-white'>{contentLabel} {isRequired && <Text className='text-red-600'> *</Text>}</Text>
+          <Text className='text-white'>{contentLabel}{isRequired && <Text className='text-red-600'> *</Text>}</Text>
           <View className='flex flex-row items-center justify-between'>
             <TextInput
               className='pt-1 pb-0 text-white'
@@ -64,13 +76,14 @@ const TransactionAddScreen = ({ navigation, route }: any) => {
               maxLength={maxLength}
               style={style}
               readOnly
+              placeholder={placeholder}
             />
-            <Image source={icon} />
+            {icon}
           </View>
         </TouchableOpacity>
       ) : (
         <View className='p-3 bg-gray-700 border border-gray-600 rounded-lg'>
-          <Text className='text-white'>{contentLabel} {isRequired && <Text className='text-red-600'> *</Text>}</Text>
+          <Text className='text-white'>{contentLabel}{isRequired && <Text className='text-red-600'> *</Text>}</Text>
           <TextInput
             className='pt-1 pb-0 text-white'
             multiline
@@ -81,6 +94,7 @@ const TransactionAddScreen = ({ navigation, route }: any) => {
             maxLength={maxLength}
             style={style}
             readOnly={readonly}
+            placeholder={placeholder}
           />
         </View>
       )
@@ -96,13 +110,13 @@ const TransactionAddScreen = ({ navigation, route }: any) => {
   const handleSaveTransaction = () => {
     if (!checkValidate()) { return }
     const newTransaction = new Transaction({
-      transaction_name: transactionName,
       transaction_type: transactionType,
       transaction_amount: transactionAmount,
-      source: 'Ví của tôi',
+      source: transactionSource,
       created_at: transactionTime,
       transaction_note: transactionNote
     })
+    showToast(`Thêm mới giao dịch ${transactionType.is_income ? 'thu' : 'chi'} thành công!`);
     TransactionCache.getInstance.pushTransaction(newTransaction)
     handleClearData()
     navigation.navigate(AppScreenEnum.TRANSACTION_BOOK_NAVIGATOR)
@@ -111,10 +125,6 @@ const TransactionAddScreen = ({ navigation, route }: any) => {
   function checkValidate(): boolean {
     if (transactionType.category_id == 0) {
       showToast('Vui lòng chọn nhóm phân loại');
-      return false;
-    }
-    if (transactionName.length == 0) {
-      showToast('Vui lòng nhập tên giao dịch');
       return false;
     }
     if (transactionAmount == 0) {
@@ -126,7 +136,7 @@ const TransactionAddScreen = ({ navigation, route }: any) => {
 
   const handleClearData = () => {
     setTransactionType(new TransactionCategory())
-    setTransactionName('')
+    setTransactionSource(TRANSACTION_SOURCE.CASH)
     setTransactionAmount(0)
     setTransactionTime(getTodayDate)
     setTransactionDate(new Date())
@@ -134,28 +144,26 @@ const TransactionAddScreen = ({ navigation, route }: any) => {
     navigation.navigate(AppScreenEnum.TRANSACTION_BOOK_NAVIGATOR)
   }
 
+  const getTransactionSourceText = (transactionSource: number) => {
+    switch (transactionSource) {
+      case TRANSACTION_SOURCE.CASH:
+        return 'Tiền Mặt'
+      case TRANSACTION_SOURCE.BANK:
+        return 'Tài Khoản Ngân Hàng'
+      default:
+        return 'Ví MoMo'
+    }
+  }
+
   return (
     <SafeAreaView className='bg-gray-900'>
       <View className='h-full'>
         <ScrollView showsVerticalScrollIndicator={false}>
           <View className='flex px-4 py-10 gap-y-7'>
-            <Text className='text-xl font-bold text-center text-white'>Giao dịch mới</Text>
+            <Text className='text-xl font-bold text-center text-white'>Ghi chép giao dịch</Text>
 
             {renderViewInputLabel({
-              contentLabel: 'Nhóm phân loại',
-              value: transactionType.category_name,
-              onPressButton: () => setModalVisible(true),
-              icon: require('../../../assets/icons/arrow-down-white.png')
-            })}
-
-            {renderViewInputLabel({
-              contentLabel: 'Tên giao dịch',
-              onChangeText: setTransactionName,
-              value: transactionName
-            })}
-
-            {renderViewInputLabel({
-              contentLabel: 'Số tiền giao dịch',
+              contentLabel: 'Số tiền',
               onChangeText: (value) => setTransactionAmount(removeFormatMoney(value)),
               value: formatMoney(transactionAmount),
               inputMode: 'numeric',
@@ -163,11 +171,25 @@ const TransactionAddScreen = ({ navigation, route }: any) => {
             })}
 
             {renderViewInputLabel({
-              contentLabel: 'Thời gian',
+              contentLabel: 'Danh mục',
+              value: transactionType.category_name,
+              onPressButton: () => setIsShowModalType(true),
+              icon: <ArrowIcon direction='down' color='white' />,
+              placeholder: 'Chọn danh mục'
+            })}
+
+            {renderViewInputLabel({
+              contentLabel: 'Ngày giao dịch',
               value: transactionTime,
-              isRequired: false,
               onPressButton: () => setShowDatePicker(true),
-              icon: require('../../../assets/icons/calendars.png')
+              icon: <Image source={require('../../../assets/icons/calendars.png')} />
+            })}
+
+            {renderViewInputLabel({
+              contentLabel: 'Nguồn tiền',
+              value: getTransactionSourceText(transactionSource),
+              onPressButton: () => setIsShowModalSource(true),
+              icon: <ArrowIcon direction='down' color='white' />
             })}
 
             {renderViewInputLabel({
@@ -175,7 +197,8 @@ const TransactionAddScreen = ({ navigation, route }: any) => {
               onChangeText: setTransactionNote,
               value: transactionNote,
               isRequired: false,
-              style: { maxHeight: 100 }
+              style: { maxHeight: 100 },
+              placeholder: 'Nhập mô tả giao dịch'
             })}
 
             <View className='flex flex-row justify-center gap-x-4'>
@@ -195,11 +218,22 @@ const TransactionAddScreen = ({ navigation, route }: any) => {
       />
 
       <ModalTransactionType
-        modalVisible={modalVisible}
+        modalVisible={isShowModalType}
         setModalVisible={(visible, itemSelected) => {
-          setModalVisible(visible)
+          setIsShowModalType(visible)
           if (itemSelected) {
             setTransactionType(itemSelected)
+          }
+        }}
+      />
+
+      <ModalTransactionSource
+        sourceDefault={transactionSource}
+        modalVisible={isShowModalSource}
+        setModalVisible={(visible, sourceSelected) => {
+          setIsShowModalSource(visible)
+          if (sourceSelected !== undefined) {
+            setTransactionSource(sourceSelected)
           }
         }}
       />

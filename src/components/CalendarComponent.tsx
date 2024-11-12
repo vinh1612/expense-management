@@ -1,71 +1,190 @@
-import { View, Text, TouchableOpacity, FlatList } from 'react-native'
-import React from 'react'
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, FlatList } from 'react-native';
+import { formatMoney, formatMoneyWithUnit } from '../utils/NumberUtils';
+import ArrowIcon from '../assets/svgIcons/ArrowIcon';
+import { TransactionByMonth } from '../types/Transaction';
+import { parseDateString } from '../utils/TimeUtil';
 
-const CalendarComponent = () => {
+interface CalendarComponentProps {
+    data: TransactionByMonth[];
+    selectedMonth?: Date
+    onMonthChange: (newMonth: number, newYear: number) => void;
+}
 
-    const [currentDate, setCurrentDate] = React.useState(new Date());
-    // Get current month, year, and days in month
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth();
-    const daysInMonth = new Date(year, month + 1, 0).getDate(); // Last day of the current month
+const CalendarComponent = ({ data, onMonthChange }: CalendarComponentProps) => {
+    const today = new Date();
+    const [currentMonth, setCurrentMonth] = useState(today.getMonth());
+    const [currentYear, setCurrentYear] = useState(today.getFullYear());
+    const weekdayTitles = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
 
-    const months = [
-        "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4",
-        "Tháng 5", "Tháng 6", "Tháng 7", "Tháng 8",
-        "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"
-    ];
+    const changeMonth = (direction: string) => {
+        let newMonth = currentMonth;
+        let newYear = currentYear;
 
-    const weekDays = [
-        "CN", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"
-    ];
-
-    // Get an array of all the days in the current month
-    const daysArray = [...Array(daysInMonth).keys()].map((day) => day + 1);
-
-    // Helper function to change month
-    const changeMonth = (direction: number) => {
-        setCurrentDate((prevDate) => {
-            const newDate = new Date(prevDate);
-            newDate.setMonth(prevDate.getMonth() + direction);
-            return newDate;
-        });
+        if (direction === 'next') {
+            if (currentMonth === 11) {
+                newMonth = 0;
+                newYear = currentYear + 1;
+            } else {
+                newMonth = currentMonth + 1;
+            }
+        } else if (direction === 'prev') {
+            if (currentMonth === 0) {
+                newMonth = 11;
+                newYear = currentYear - 1;
+            } else {
+                newMonth = currentMonth - 1;
+            }
+        }
+        setCurrentMonth(newMonth);
+        setCurrentYear(newYear);
+        onMonthChange(newMonth, newYear);
     };
 
+    const getDaysInMonth = (month: number, year: number) => {
+        return new Date(year, month + 1, 0).getDate();
+    };
+
+    const getFirstWeekdayOfMonth = (month: number, year: number) => {
+        return new Date(year, month, 1).getDay();
+    };
+
+    const getLastWeekdayOfMonth = (month: number, year: number) => {
+        return new Date(year, month + 1, 0).getDay();
+    };
+
+    // Group transactions by date (created_at)
+    const groupTransactionsByDate = () => {
+        const transactionsByDate: { [key: string]: { income: number; expense: number } } = {};
+
+        data.forEach((monthData) => {
+            monthData.data.forEach((transaction) => {
+                const date = parseDateString(transaction.created_at);
+                const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+
+                if (!transactionsByDate[dateKey]) {
+                    transactionsByDate[dateKey] = { income: 0, expense: 0 };
+                }
+
+                if (transaction.transaction_type.is_income) {
+                    transactionsByDate[dateKey].income += transaction.transaction_amount;
+                } else {
+                    transactionsByDate[dateKey].expense += transaction.transaction_amount;
+                }
+            });
+        });
+
+        return transactionsByDate;
+    };
+
+    const transactionsByDate = groupTransactionsByDate();
+
+    const generateDays = () => {
+        const daysInMonth = getDaysInMonth(currentMonth, currentYear);
+        const firstWeekday = getFirstWeekdayOfMonth(currentMonth, currentYear);
+        const lastWeekday = getLastWeekdayOfMonth(currentMonth, currentYear);
+        const daysArray = [];
+
+        const addPlaceholders = (count: number) => {
+            return Array.from({ length: count }, () => ({ day: null }));
+        };
+
+        daysArray.push(...addPlaceholders(firstWeekday === 0 ? 6 : firstWeekday - 1));
+
+        for (let i = 1; i <= daysInMonth; i++) {
+            const dateKey = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+            const dayData = transactionsByDate[dateKey] ?? { income: 0, expense: 0 };
+            daysArray.push({ day: i, ...dayData });
+        }
+
+        daysArray.push(...addPlaceholders(lastWeekday === 0 ? 0 : 7 - lastWeekday));
+
+        return daysArray;
+    };
+
+    const calculateTotals = () => {
+        let totalIncome = 0;
+        let totalExpense = 0;
+
+        Object.keys(transactionsByDate).forEach((key) => {
+            const [year, month] = key.split('-');
+            if (parseInt(month, 10) === currentMonth + 1 && parseInt(year, 10) === currentYear) {
+                totalIncome += transactionsByDate[key].income ?? 0;
+                totalExpense += transactionsByDate[key].expense ?? 0;
+            }
+        });
+
+        return { totalIncome, totalExpense, balance: totalIncome - totalExpense };
+    };
+
+    const { totalIncome, totalExpense, balance } = calculateTotals();
+
+    const displayMoney = (value: number, className: string) => (
+        <Text className={`text-xs text-right ${className}`}>{value > 0 ? formatMoneyWithUnit(value) : ''}</Text>
+    );
+
     return (
-        <View className="p-4 border border-gray-300 rounded-lg">
-            {/* Header for navigation */}
-            <View className="flex-row items-center justify-between w-full">
-                <TouchableOpacity onPress={() => changeMonth(-1)}>
-                    <Text className="text-2xl font-bold">{'<'}</Text>
+        <View>
+            {/* Header */}
+            <View className='flex-row items-center p-2 border-b justify-evenly border-b-white'>
+                <TouchableOpacity onPress={() => changeMonth('prev')}>
+                    <ArrowIcon direction='left' color='white' />
                 </TouchableOpacity>
-                <Text className="text-lg">{`${months[month]} ${year}`}</Text>
-                <TouchableOpacity onPress={() => changeMonth(1)}>
-                    <Text className="text-2xl font-bold">{'>'}</Text>
+                <Text className='text-lg font-bold'>
+                    Tháng {currentMonth + 1}/{currentYear}
+                </Text>
+                <TouchableOpacity onPress={() => changeMonth('next')}>
+                    <ArrowIcon direction='right' color='white' />
                 </TouchableOpacity>
             </View>
 
-            {/* Days of the week */}
-            <View className="flex-row items-center justify-between my-4">
-                {weekDays.map((day) => (
-                    <Text key={day} className="w-12 font-bold text-center">{day}</Text>
+            {/* Summary */}
+            <View className='flex-row items-center justify-center gap-10 p-4'>
+                <View className='flex items-center'>
+                    <Text className='text-xs'>Tổng thu</Text>
+                    <Text className='text-base text-blue-500'>{formatMoney(totalIncome)}đ</Text>
+                </View>
+                <View className='flex items-center'>
+                    <Text className='text-xs'>Tổng chi</Text>
+                    <Text className='text-base text-red-500'>{formatMoney(totalExpense)}đ</Text>
+                </View>
+                <View className='flex items-center'>
+                    <Text className='text-xs'>Chênh lệch</Text>
+                    <Text className='text-base text-green-500'>{formatMoney(balance)}đ</Text>
+                </View>
+            </View>
+
+            {/* Weekday Titles */}
+            <View className='flex-row justify-between w-full py-1 bg-blue-200'>
+                {weekdayTitles.map((weekday) => (
+                    <Text key={weekday} className='flex-1 text-sm font-bold text-center'>
+                        {weekday}
+                    </Text>
                 ))}
             </View>
 
-            {/* Grid of days */}
-            <View className="flex-row">
+            {/* Calendar Grid */}
+            <View>
                 <FlatList
-                    data={daysArray}
+                    data={generateDays()}
                     numColumns={7}
-                    keyExtractor={(item) => item.toString()}
-                    renderItem={({ item }) => (
-                        <TouchableOpacity className="items-center w-12 p-2">
-                            <Text className="text-base">{item}</Text>
-                        </TouchableOpacity>
-                    )}
+                    keyExtractor={(_, index) => index.toString()}
+                    renderItem={({ item }) => {
+                        if (!item.day) {
+                            return <View className='flex-1 p-2 border border-gray-200' />;
+                        }
+                        return (
+                            <View className='flex-1 p-2 border border-gray-200'>
+                                <Text className='text-sm font-bold'>{item.day}</Text>
+                                {displayMoney(item.income, 'text-blue-500')}
+                                {displayMoney(item.expense, 'text-red-500')}
+                            </View>
+                        );
+                    }}
                 />
             </View>
         </View>
-    )
-}
+    );
+};
 
-export default CalendarComponent
+export default CalendarComponent;

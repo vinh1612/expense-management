@@ -4,41 +4,41 @@ import { LineChart } from 'react-native-gifted-charts';
 const LineChartComponent = () => {
 
     const data1 = [
-        { value: 12_000_000, label: 'T1' },
-        { value: 12_000_000, label: 'T2' },
-        { value: 12_000_000, label: 'T3' },
-        { value: 12_000_000, label: 'T4' },
-        { value: 12_000_000, label: 'T5' },
-        { value: 12_000_000, label: 'T6' },
-        { value: 12_000_000, label: 'T7' },
-        { value: 12_000_000, label: 'T8' },
-        { value: 12_000_000, label: 'T9' },
-        { value: 12_000_000, label: 'T10' },
-        { value: 12_000_000, label: 'T11' },
-        { value: 12_000_000, label: 'T12' },
+        { value: 12e6, label: 'T1' },
+        { value: 12e6, label: 'T2' },
+        { value: 12e6, label: 'T3' },
+        { value: 12e6, label: 'T4' },
+        { value: 12e6, label: 'T5' },
+        { value: 12e6, label: 'T6' },
+        { value: 12e6, label: 'T7' },
+        { value: 12e6, label: 'T8' },
+        { value: 12e6, label: 'T9' },
+        { value: 12e6, label: 'T10' },
+        { value: 12e6, label: 'T11' },
+        { value: 12e6, label: 'T12' },
     ];
     const data2 = [
-        { value: 6_000_000, label: 'T1' },
-        { value: 3_000_000, label: 'T2' },
-        // { value: 7_500_000, label: 'T3' },
+        { value: 6e6, label: 'T1' },
+        { value: 3e6, label: 'T2' },
+        { value: 7_500_000, label: 'T3' },
         { value: 1_200_000, label: 'T4' },
-        { value: 5_000_000, label: 'T5' },
-        { value: 3_000_000, label: 'T6' },
-        { value: 2_000_000, label: 'T7' },
-        { value: 9_000_000, label: 'T8' },
-        { value: 12_000_000, label: 'T9' },
-        { value: 11_000_000, label: 'T10' },
-        { value: 7_000_000, label: 'T11' },
-        { value: 9_000_000, label: 'T12' },
+        { value: 5e6, label: 'T5' },
+        { value: 3e6, label: 'T6' },
+        { value: 2e6, label: 'T7' },
+        { value: 9e6, label: 'T8' },
+        { value: 12e6, label: 'T9' },
+        { value: 11e6, label: 'T10' },
+        { value: 7e6, label: 'T11' },
+        { value: 9e6, label: 'T12' },
     ];
 
     const formatValue = (num: number) => {
-        if (num >= 1_000_000_000) {
-            return (num / 1_000_000_000).toFixed(0) + 'B';
-        } else if (num >= 1_000_000) {
-            return (num / 1_000_000).toFixed(0) + 'M';
-        } else if (num >= 1_000) {
-            return (num / 1_000).toFixed(0) + 'K';
+        if (num >= 1e9) {
+            return (num / 1e9).toFixed(0) + ' Tỷ';
+        } else if (num >= 1e6) {
+            return (num / 1e6).toFixed(0) + ' Triệu';
+        } else if (num >= 1e3) {
+            return (num / 1e3).toFixed(0) + ' K';
         } else {
             return num.toString();
         }
@@ -73,7 +73,7 @@ const LineChartComponent = () => {
             xAxisLabelTextStyle={{ color: 'white' }}
             xAxisColor="white"
             formatYLabel={(value: string) => formatValue(Number(value))}
-            yAxisLabelWidth={40}
+            yAxisLabelWidth={60}
         />
     )
 }
