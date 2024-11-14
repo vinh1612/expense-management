@@ -1,4 +1,4 @@
-import { View, Text, SafeAreaView, Image, SectionList, FlatList } from 'react-native'
+import { View, Text, SafeAreaView, Image, SectionList, FlatList, Pressable, Animated, Easing, ImageSourcePropType } from 'react-native'
 import React from 'react'
 import { formatDate, parseDateString } from '../../../utils/TimeUtil'
 import { formatMoney } from '../../../utils/NumberUtils';
@@ -9,6 +9,7 @@ import EmptyList from '../../../components/EmptyList';
 import { useIsFocused } from '@react-navigation/native';
 import { TRANSACTION_SOURCE } from '../../../constants/Constant';
 import CalendarComponent from '../../../components/CalendarComponent';
+import DoubleArrowIcon from '../../../assets/svgIcons/DoubleArrowIcon';
 
 const TransactionScreen = () => {
 
@@ -68,6 +69,19 @@ const TransactionScreen = () => {
     }
   }
 
+  const [isRotated, setIsRotated] = React.useState(true); // State to toggle rotation
+  const rotationValue = React.useRef(new Animated.Value(0)).current; // Ref for the animation value
+
+  const handlePress = () => {
+    setIsRotated(!isRotated); // Toggle the rotation state
+    Animated.timing(rotationValue, {
+      toValue: isRotated ? 0 : 1, // Rotate back and forth
+      duration: 500,
+      useNativeDriver: true, // Enable native driver for better performance
+      easing: Easing.inOut(Easing.ease),
+    }).start();
+  };
+
   return (
     <SafeAreaView className='bg-gray-900'>
       <FlatList
@@ -76,11 +90,22 @@ const TransactionScreen = () => {
         showsVerticalScrollIndicator={false}
         className='h-full'
         ListHeaderComponent={
-          <View className='h-full px-2 pt-2 space-y-4'>
+          <View className='h-full px-2 pt-2 space-y-6'>
             <View
-              className='p-2 bg-gray-700 border border-gray-600 rounded-xl'
+              className={`p-2 ${isRotated ? 'pb-4' : ''} bg-gray-700 border border-gray-600 rounded-xl`}
             >
-              <CalendarComponent data={transactionsSection.array} onMonthChange={handleMonthChange} />
+              <CalendarComponent
+                data={transactionsSection.array}
+                onMonthChange={handleMonthChange}
+                isExpanded={isRotated}
+              />
+
+              <Pressable
+                className='absolute bottom-[-16px] self-center bg-gray-700 px-8 pt-2 pb-1 rounded-full'
+                onPress={handlePress}
+              >
+                <DoubleArrowIcon direction={isRotated ? 'up' : 'down'} color='gray' size={18} />
+              </Pressable>
             </View>
 
             <SectionList
@@ -94,7 +119,10 @@ const TransactionScreen = () => {
                 return (
                   <View className='flex flex-row items-center justify-between pb-3 space-x-2'>
                     <Image
-                      source={item.transaction_type.category_source}
+                      source={typeof item.transaction_type.category_source === 'string'
+                        ? { uri: item.transaction_type.category_source }
+                        : item.transaction_type.category_source as ImageSourcePropType
+                      }
                       className='flex-none w-12 h-12 bg-white rounded-full'
                     />
                     <View className='flex flex-row items-center justify-between flex-1 space-x-4'>
@@ -109,8 +137,7 @@ const TransactionScreen = () => {
                     </View>
                   </View>
                 )
-              }}
-              renderSectionHeader={({ section: { date_time } }) => {
+              }} renderSectionHeader={({ section: { date_time } }) => {
                 const { formattedDate, dayOfWeek } = formatDate(date_time)
                 return (
                   <View
@@ -128,5 +155,4 @@ const TransactionScreen = () => {
     </SafeAreaView>
   )
 }
-
 export default TransactionScreen

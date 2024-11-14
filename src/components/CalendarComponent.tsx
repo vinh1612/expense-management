@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, FlatList } from 'react-native';
+import React from 'react';
+import { View, Text, TouchableOpacity, FlatList, Animated } from 'react-native';
 import { formatMoney, formatMoneyWithUnit } from '../utils/NumberUtils';
 import ArrowIcon from '../assets/svgIcons/ArrowIcon';
 import { TransactionByMonth } from '../types/Transaction';
@@ -7,14 +7,19 @@ import { parseDateString } from '../utils/TimeUtil';
 
 interface CalendarComponentProps {
     data: TransactionByMonth[];
-    selectedMonth?: Date
     onMonthChange: (newMonth: number, newYear: number) => void;
+    isExpanded?: boolean
 }
 
-const CalendarComponent = ({ data, onMonthChange }: CalendarComponentProps) => {
+const CalendarComponent = ({
+    data,
+    isExpanded = true,
+    onMonthChange
+}: CalendarComponentProps) => {
+
     const today = new Date();
-    const [currentMonth, setCurrentMonth] = useState(today.getMonth());
-    const [currentYear, setCurrentYear] = useState(today.getFullYear());
+    const [currentMonth, setCurrentMonth] = React.useState(today.getMonth());
+    const [currentYear, setCurrentYear] = React.useState(today.getFullYear());
     const weekdayTitles = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
 
     const changeMonth = (direction: string) => {
@@ -77,7 +82,7 @@ const CalendarComponent = ({ data, onMonthChange }: CalendarComponentProps) => {
         return transactionsByDate;
     };
 
-    const transactionsByDate = groupTransactionsByDate();
+    const transactionsByDate = React.useMemo(groupTransactionsByDate, [data]);
 
     const generateDays = () => {
         const daysInMonth = getDaysInMonth(currentMonth, currentYear);
@@ -123,6 +128,8 @@ const CalendarComponent = ({ data, onMonthChange }: CalendarComponentProps) => {
         <Text className={`text-xs text-right ${className}`}>{value > 0 ? formatMoneyWithUnit(value) : ''}</Text>
     );
 
+    const isCurrentMonth = today.getMonth() === currentMonth && today.getFullYear() === currentYear;
+
     return (
         <View>
             {/* Header */}
@@ -130,8 +137,8 @@ const CalendarComponent = ({ data, onMonthChange }: CalendarComponentProps) => {
                 <TouchableOpacity onPress={() => changeMonth('prev')}>
                     <ArrowIcon direction='left' color='white' />
                 </TouchableOpacity>
-                <Text className='text-lg font-bold'>
-                    Tháng {currentMonth + 1}/{currentYear}
+                <Text className='w-40 text-lg font-bold text-center text-yellow-200'>
+                    Tháng {isCurrentMonth ? 'này' : `${(currentMonth + 1)}/${currentYear}`}
                 </Text>
                 <TouchableOpacity onPress={() => changeMonth('next')}>
                     <ArrowIcon direction='right' color='white' />
@@ -139,7 +146,7 @@ const CalendarComponent = ({ data, onMonthChange }: CalendarComponentProps) => {
             </View>
 
             {/* Summary */}
-            <View className='flex-row items-center justify-center gap-10 p-4'>
+            <View className='flex-row items-center justify-center p-4 space-x-10'>
                 <View className='flex items-center'>
                     <Text className='text-xs'>Tổng thu</Text>
                     <Text className='text-base text-blue-500'>{formatMoney(totalIncome)}đ</Text>
@@ -154,37 +161,38 @@ const CalendarComponent = ({ data, onMonthChange }: CalendarComponentProps) => {
                 </View>
             </View>
 
-            {/* Weekday Titles */}
-            <View className='flex-row justify-between w-full py-1 bg-blue-200'>
-                {weekdayTitles.map((weekday) => (
-                    <Text key={weekday} className='flex-1 text-sm font-bold text-center'>
-                        {weekday}
-                    </Text>
-                ))}
-            </View>
+            <Animated.View style={{ ...(!isExpanded && { height: 0 }) }}>
+                <View>
+                    {/* Weekday Titles */}
+                    <View className='flex-row justify-between w-full bg-blue-200' >
+                        {weekdayTitles.map((weekday) => (
+                            <Text key={weekday} className='flex-1 py-1 text-sm font-bold text-center text-black'>
+                                {weekday}
+                            </Text>
+                        ))}
+                    </View>
 
-            {/* Calendar Grid */}
-            <View>
-                <FlatList
-                    data={generateDays()}
-                    numColumns={7}
-                    keyExtractor={(_, index) => index.toString()}
-                    renderItem={({ item }) => {
-                        if (!item.day) {
-                            return <View className='flex-1 p-2 border border-gray-200' />;
-                        }
-                        return (
-                            <View className='flex-1 p-2 border border-gray-200'>
-                                <Text className='text-sm font-bold'>{item.day}</Text>
-                                {displayMoney(item.income, 'text-blue-500')}
-                                {displayMoney(item.expense, 'text-red-500')}
-                            </View>
-                        );
-                    }}
-                />
-            </View>
+                    {/* Calendar Grid */}
+                    <FlatList
+                        data={generateDays()}
+                        numColumns={7}
+                        keyExtractor={(_, index) => index.toString()}
+                        renderItem={({ item }) => {
+                            if (!item.day) {
+                                return <View className='flex-1 p-2 border border-gray-200' />;
+                            }
+                            return (
+                                <View className='flex-1 p-2 border border-gray-200'>
+                                    <Text className='text-sm font-bold'>{item.day}</Text>
+                                    {displayMoney(item.income, 'text-blue-500')}
+                                    {displayMoney(item.expense, 'text-red-500')}
+                                </View>
+                            );
+                        }}
+                    />
+                </View>
+            </Animated.View>
         </View>
     );
 };
-
 export default CalendarComponent;

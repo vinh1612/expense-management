@@ -22,7 +22,7 @@ export class TransactionCategory {
     category_name: string = "";
     category_note: string = "";
     is_income: boolean = false;
-    category_source: ImageRequireSource = require("../assets/images/salary.png");
+    category_source: string | ImageRequireSource = '';
     created_at: string = "";
 
     constructor(data?: Partial<TransactionCategory>) {

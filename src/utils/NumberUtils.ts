@@ -3,12 +3,24 @@ export const formatMoney = (amount: number) => {
 }
 
 export const formatMoneyWithUnit = (amount: number) => {
+    const roundNumber = (num: number) => {
+        if (num % 1 === 0) {
+            return num.toFixed(0); // No decimals
+        } else if (num * 10 % 1 === 0) {
+            return num.toFixed(1); // 1 decimal place
+        } else if (num * 100 % 1 === 0) {
+            return num.toFixed(2); // 2 decimal places
+        } else {
+            return num.toFixed(3); // 3 decimal places
+        }
+    };
+
     if (amount >= 1e9) {
-        return (amount / 1e9).toFixed(1).replace(/\.0$/, '') + ' tỷ'; // For billions
-    } else if (amount >= 1e6) {
-        return (amount / 1e6).toFixed(1).replace(/\.0$/, '') + ' triệu'; // For millions
+        return roundNumber(amount / 1e9) + ' tỷ'; // For billions
+    } else if (amount >= 1e7) {
+        return roundNumber(amount / 1e6) + ' triệu'; // For millions
     } else if (amount >= 1e4) {
-        return (amount / 1e3).toFixed(1).replace(/\.0$/, '') + 'k'; // For thousands
+        return roundNumber(amount / 1e3) + 'k'; // For thousands
     }
     return formatMoney(amount);
 };

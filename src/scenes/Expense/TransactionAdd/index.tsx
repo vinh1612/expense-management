@@ -17,10 +17,11 @@ import { showToast } from '../../../utils/ToastUtils';
 import ModalTransactionSource from './components/ModalTransactionSource';
 import { TRANSACTION_SOURCE } from '../../../constants/Constant';
 import ArrowIcon from '../../../assets/svgIcons/ArrowIcon';
+import { convertCategorySourceToBase64 } from '../../../utils/ImageUtils';
 
 const TransactionAddScreen = ({ navigation }: any) => {
 
-  const [transactionType, setTransactionType] = React.useState(new TransactionCategory());
+  const [transactionType, setTransactionType] = React.useState(new TransactionCategory({ category_id: 0 }));
   const [transactionSource, setTransactionSource] = React.useState(TRANSACTION_SOURCE.CASH);
   const [transactionAmount, setTransactionAmount] = React.useState(0);
   const [transactionTime, setTransactionTime] = React.useState(getTodayDate()); // For display input text
@@ -123,19 +124,19 @@ const TransactionAddScreen = ({ navigation }: any) => {
   }
 
   function checkValidate(): boolean {
-    if (transactionType.category_id == 0) {
-      showToast('Vui lòng chọn nhóm phân loại');
-      return false;
-    }
     if (transactionAmount == 0) {
       showToast('Vui lòng nhập số tiền giao dịch');
+      return false;
+    }
+    if (transactionType.category_id == 0) {
+      showToast('Vui lòng chọn danh mục để phân loại');
       return false;
     }
     return true;
   }
 
   const handleClearData = () => {
-    setTransactionType(new TransactionCategory())
+    setTransactionType(new TransactionCategory({ category_id: 0 }));
     setTransactionSource(TRANSACTION_SOURCE.CASH)
     setTransactionAmount(0)
     setTransactionTime(getTodayDate)
@@ -219,10 +220,13 @@ const TransactionAddScreen = ({ navigation }: any) => {
 
       <ModalTransactionType
         modalVisible={isShowModalType}
-        setModalVisible={(visible, itemSelected) => {
+        setModalVisible={async (visible, itemSelected) => {
           setIsShowModalType(visible)
           if (itemSelected) {
-            setTransactionType(itemSelected)
+            const newItem = new TransactionCategory(itemSelected)
+            const base64Image = await convertCategorySourceToBase64(itemSelected.category_source as ImageRequireSource)
+            newItem.category_source = base64Image ?? ""
+            setTransactionType(newItem)
           }
         }}
       />

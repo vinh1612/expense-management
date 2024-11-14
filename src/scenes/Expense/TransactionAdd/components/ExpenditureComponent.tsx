@@ -1,4 +1,4 @@
-import { View, Text, FlatList, Image, TouchableOpacity } from 'react-native'
+import { View, Text, FlatList, Image, TouchableOpacity, ImageSourcePropType } from 'react-native'
 import React from 'react'
 import useArray from '../../../../hooks/useArray'
 import { TransactionCategory } from '../../../../types/Transaction';
@@ -77,7 +77,14 @@ const ExpenditureComponent = ({ onItemPress }: ExpenditureComponentProps) => {
                     ${idSelected === item.category_id ? 'border-2 border-pink-300 bg-pink-100' : 'bg-white'}`
                 }
               >
-                <Image className='w-[60] h-[60]' source={item.category_source} />
+                <Image
+                  className='w-[60] h-[60]'
+                  {...(typeof item.category_source === 'string' ? ({
+                    uri: item.category_source
+                  }) : ({
+                    source: item.category_source as ImageSourcePropType
+                  }))}
+                />
                 {item.category_name !== '' && <Text className={`text-center ${idSelected === item.category_id ? 'text-pink-500' : 'text-gray-500'}`}>{item.category_name}</Text>}
               </View>
             </TouchableOpacity>

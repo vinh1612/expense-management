@@ -41,13 +41,13 @@ const WalletScreen = () => {
     if (maxWidthIncome > 0) {
       setAnimatedProgress(progressIncome, wallet.total_income)
     }
-  }, [maxWidthIncome, wallet.total_income]);
+  }, [maxWidthIncome, wallet]);
 
   React.useEffect(() => {
     if (maxWidthExpenditure > 0) {
       setAnimatedProgress(progressExpenditure, wallet.total_expenditure)
     }
-  }, [maxWidthExpenditure, wallet.total_expenditure]);
+  }, [maxWidthExpenditure, wallet]);
 
   React.useEffect(() => {
     if (isFocused && WalletCache.getInstance.getWalletCache().total_amount !== wallet.total_amount) {
@@ -65,7 +65,7 @@ const WalletScreen = () => {
 
   const renderViewProgress = ({ progressTitle, progressColor, progressWidth, amount, setMaxWidth }: ViewProgressProps) => {
     return (
-      <View className='flex'>
+      <View className='flex space-y-1'>
         <Text className='text-base font-extrabold text-white'>{progressTitle}</Text>
         <View
           className='h-3 bg-white rounded-full'
@@ -79,7 +79,7 @@ const WalletScreen = () => {
             style={{ backgroundColor: progressColor, width: progressWidth }}
           />
         </View>
-        <Text className='pt-2 font-bold' style={{ color: progressColor }}>{amount} VND</Text>
+        <Text className='font-bold' style={{ color: progressColor }}>{amount} VND</Text>
       </View>
     )
   }

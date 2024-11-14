@@ -33,7 +33,7 @@ export class TransactionCache {
     }
   }
 
-  deleteTransactionCache() {
+  clearTransactionCache() {
     if (storage.contains(KEY_CACHE.TRANSACTION)) {
       storage.delete(KEY_CACHE.TRANSACTION)
     }
@@ -47,7 +47,7 @@ export class TransactionCache {
   }
 
   // Update a transaction in the array by ID (or some other identifier)
-  updateTransaction(updatedTransaction: Transaction) {
+  updateTransactionWith(updatedTransaction: Transaction) {
     const transactions = this.getTransactionCache();
     const index = transactions.findIndex(t => t.transaction_id === updatedTransaction.transaction_id); // Assuming each transaction has a unique 'id'
     if (index !== -1) {
@@ -57,7 +57,7 @@ export class TransactionCache {
   }
 
   // Remove a transaction from the array by ID (or some other identifier)
-  removeTransaction(transactionId: number) {
+  removeTransactionWith(transactionId: number) {
     let transactions = this.getTransactionCache();
     transactions = transactions.filter(t => t.transaction_id !== transactionId); // Assuming each transaction has a unique 'id'
     this.saveTransactionCache(transactions);
@@ -83,28 +83,28 @@ export class WalletCache {
   getWalletCache(): Wallet {
     let cached: Wallet;
     try {
-      const cachedTransaction = JSON.parse(storage.getString(KEY_CACHE.TRANSACTION) as string) as Transaction[];
-      
+      const cachedTransaction = this.getTransactionCacheSafe();
+
       const total_amount = cachedTransaction
-      .reduce((total, currentValue) => {
-        const amount = currentValue.transaction_type.is_income ? currentValue.transaction_amount : -currentValue.transaction_amount;
-        return total + amount;
-      }, 0);
-      
+        .reduce((total, currentValue) => {
+          const amount = currentValue.transaction_type.is_income ? currentValue.transaction_amount : -currentValue.transaction_amount;
+          return total + amount;
+        }, 0);
+
       const total_income = cachedTransaction
-      .filter((item) => item.transaction_type.is_income)
-      .reduce((total, currentValue) => {
-        return total + currentValue.transaction_amount;
-      }, 0);
+        .filter((item) => item.transaction_type.is_income)
+        .reduce((total, currentValue) => {
+          return total + currentValue.transaction_amount;
+        }, 0);
 
       const total_expenditure = cachedTransaction
-      .filter((item) => !item.transaction_type.is_income)
-      .reduce((total, currentValue) => {
-        return total + currentValue.transaction_amount;
-      }, 0);
+        .filter((item) => !item.transaction_type.is_income)
+        .reduce((total, currentValue) => {
+          return total + currentValue.transaction_amount;
+        }, 0);
 
       const walletString = storage.getString(KEY_CACHE.WALLET);
-      
+
       if (walletString) { // Kiểm tra cache đã được khởi tạo bên dưới hay chưa
         cached = JSON.parse(walletString) as Wallet;
         cached.total_amount = total_amount
@@ -113,12 +113,23 @@ export class WalletCache {
       } else {
         cached = new Wallet();
       }
-      
+
       this.saveWalletCache(cached);
 
       return cached
     } catch (error) {
       return new Wallet();
+    }
+  }
+
+  // Private method to safely retrieve transactions for wallet calculations
+  private getTransactionCacheSafe(): Transaction[] {
+    try {
+      const cachedTransactions = storage.getString(KEY_CACHE.TRANSACTION);
+      return cachedTransactions ? JSON.parse(cachedTransactions) : [];
+    } catch (error) {
+      console.error('Error retrieving transactions for wallet:', error);
+      return [];
     }
   }
 }
