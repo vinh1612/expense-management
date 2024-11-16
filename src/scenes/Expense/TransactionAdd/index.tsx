@@ -1,7 +1,7 @@
 import {
   View, Text, SafeAreaView, ScrollView,
   TextInput, TouchableOpacity, InputModeOptions,
-  Image, TextStyle, ImageRequireSource
+  Image, TextStyle
 } from 'react-native'
 import React from 'react'
 import DateTimePickerModal from "react-native-modal-datetime-picker";
@@ -17,7 +17,6 @@ import { showToast } from '../../../utils/ToastUtils';
 import ModalTransactionSource from './components/ModalTransactionSource';
 import { TRANSACTION_SOURCE } from '../../../constants/Constant';
 import ArrowIcon from '../../../assets/svgIcons/ArrowIcon';
-import { convertCategorySourceToBase64 } from '../../../utils/ImageUtils';
 
 const TransactionAddScreen = ({ navigation }: any) => {
 
@@ -220,13 +219,10 @@ const TransactionAddScreen = ({ navigation }: any) => {
 
       <ModalTransactionType
         modalVisible={isShowModalType}
-        setModalVisible={async (visible, itemSelected) => {
+        setModalVisible={(visible, itemSelected) => {
           setIsShowModalType(visible)
           if (itemSelected) {
-            const newItem = new TransactionCategory(itemSelected)
-            const base64Image = await convertCategorySourceToBase64(itemSelected.category_source as ImageRequireSource)
-            newItem.category_source = base64Image ?? ""
-            setTransactionType(newItem)
+            setTransactionType(itemSelected)
           }
         }}
       />

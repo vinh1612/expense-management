@@ -2,6 +2,7 @@ import { View, Text, TouchableOpacity, FlatList, Image, ImageSourcePropType } fr
 import React from 'react'
 import useArray from '../../../../hooks/useArray'
 import { TransactionCategory } from '../../../../types/Transaction'
+import { BASE64_IMAGES } from '../../../../storages/Base64Images';
 
 interface IncomeComponentProps {
   onItemPress: (item: TransactionCategory) => void;
@@ -12,10 +13,10 @@ const IncomeComponent = ({ onItemPress }: IncomeComponentProps) => {
   const [idSelected, setIdSelected] = React.useState<string | number>(0)
 
   const incomes = useArray<TransactionCategory>([
-    new TransactionCategory({ category_id: 2, is_income: true, category_name: 'Tiền lương', category_source: require('../../../../assets/images/salary.png') }),
-    new TransactionCategory({ category_id: 3, is_income: true, category_name: 'Tiền thưởng', category_source: require('../../../../assets/images/bonus.png') }),
-    new TransactionCategory({ category_id: 4, is_income: true, category_name: 'Tiền đầu tư', category_source: require('../../../../assets/images/invest.png') }),
-    new TransactionCategory({ category_id: 5, is_income: true, category_name: 'Tiền khác', category_source: require('../../../../assets/images/other-money.png') }),
+    new TransactionCategory({ category_id: 2, is_income: true, category_name: 'Tiền lương', category_source: BASE64_IMAGES.salary }),
+    new TransactionCategory({ category_id: 3, is_income: true, category_name: 'Tiền thưởng', category_source: BASE64_IMAGES.bonus }),
+    new TransactionCategory({ category_id: 4, is_income: true, category_name: 'Tiền đầu tư', category_source: BASE64_IMAGES.invest }),
+    new TransactionCategory({ category_id: 5, is_income: true, category_name: 'Tiền khác', category_source: BASE64_IMAGES.other_money }),
   ])
 
   React.useEffect(() => {
@@ -27,7 +28,9 @@ const IncomeComponent = ({ onItemPress }: IncomeComponentProps) => {
   const handleSelected = (selected: TransactionCategory) => {
     const condition = selected.category_id === idSelected || selected.category_id === 1 ? 0 : selected.category_id
     setIdSelected(condition)
-    onItemPress(selected)
+    if (selected.category_id !== 1) {
+      onItemPress(selected)
+    }
   }
 
   return (
@@ -49,7 +52,7 @@ const IncomeComponent = ({ onItemPress }: IncomeComponentProps) => {
                 <Image
                   className='w-[60] h-[60]'
                   {...(typeof item.category_source === 'string' ? ({
-                    uri: item.category_source
+                    source: { uri: item.category_source }
                   }) : ({
                     source: item.category_source as ImageSourcePropType
                   }))}

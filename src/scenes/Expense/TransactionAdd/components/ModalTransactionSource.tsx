@@ -3,6 +3,7 @@ import ButtonComponent from "../../../../components/ButtonComponent";
 import React from "react";
 import { TRANSACTION_SOURCE } from "../../../../constants/Constant";
 import MoMoIcon from "../../../../assets/svgIcons/MoMoIcon";
+import { BASE64_IMAGES } from "../../../../storages/Base64Images";
 
 interface ModalTransactionSourceProps {
     sourceDefault: number
@@ -20,8 +21,8 @@ const ModalTransactionSource = ({ sourceDefault, modalVisible, setModalVisible }
     }, [modalVisible])
 
     const transactionSource = [
-        { id: TRANSACTION_SOURCE.CASH, image: <Image className="w-[60] h-[60]" source={require('../../../../assets/images/salary.png')} />, title: 'Tiền Mặt' },
-        { id: TRANSACTION_SOURCE.BANK, image: <Image className="w-[60] h-[60]" source={require('../../../../assets/images/logo-atm.png')} />, title: 'Tài Khoản Ngân Hàng' },
+        { id: TRANSACTION_SOURCE.CASH, image: <Image className="w-[60] h-[60]" source={{ uri: BASE64_IMAGES.salary }} />, title: 'Tiền Mặt' },
+        { id: TRANSACTION_SOURCE.BANK, image: <Image className="w-[60] h-[60]" source={{ uri: BASE64_IMAGES.logo_atm }} />, title: 'Tài Khoản Ngân Hàng' },
         { id: TRANSACTION_SOURCE.MOMO, image: <MoMoIcon size={60} />, title: 'Ví MoMo' },
     ]
 
