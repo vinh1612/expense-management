@@ -6,9 +6,10 @@ import { BASE64_IMAGES } from '../../../../storages/Base64Images';
 
 interface IncomeComponentProps {
   onItemPress: (item: TransactionCategory) => void;
+  dataDefault: TransactionCategory;
 }
 
-const IncomeComponent = ({ onItemPress }: IncomeComponentProps) => {
+const IncomeComponent = ({ onItemPress, dataDefault }: IncomeComponentProps) => {
 
   const [idSelected, setIdSelected] = React.useState<string | number>(0)
 
@@ -18,6 +19,11 @@ const IncomeComponent = ({ onItemPress }: IncomeComponentProps) => {
     new TransactionCategory({ category_id: 4, is_income: true, category_name: 'Tiền đầu tư', category_source: BASE64_IMAGES.invest }),
     new TransactionCategory({ category_id: 5, is_income: true, category_name: 'Tiền khác', category_source: BASE64_IMAGES.other_money }),
   ])
+
+  React.useEffect(() => {
+    if (!dataDefault.is_income) { return }
+    setIdSelected(dataDefault.category_id)
+  }, [])
 
   React.useEffect(() => {
     const addElement = incomes.array.findIndex((item) => item.category_id === 1)
@@ -34,7 +40,7 @@ const IncomeComponent = ({ onItemPress }: IncomeComponentProps) => {
   }
 
   return (
-    <View className='items-center justify-center flex-1 px-1 py-2'>
+    <View className='items-center justify-center flex-1 px-1 py-2 bg-gray-800'>
       <FlatList
         data={incomes.array}
         showsVerticalScrollIndicator={false}
@@ -46,7 +52,7 @@ const IncomeComponent = ({ onItemPress }: IncomeComponentProps) => {
               <View
                 className={
                   `p-1 gap-y-1 items-center justify-center w-full h-full rounded-xl
-                    ${idSelected === item.category_id ? 'border-2 border-pink-300 bg-pink-100' : 'bg-white'}`
+                    ${idSelected === item.category_id ? 'border-2 border-pink-300 bg-pink-100' : 'bg-gray-900'}`
                 }
               >
                 <Image
@@ -57,7 +63,7 @@ const IncomeComponent = ({ onItemPress }: IncomeComponentProps) => {
                     source: item.category_source as ImageSourcePropType
                   }))}
                 />
-                {item.category_name !== '' && <Text className={`text-center ${idSelected === item.category_id ? 'text-pink-500' : 'text-gray-500'}`}>{item.category_name}</Text>}
+                {item.category_name !== '' && <Text className={`text-center ${idSelected === item.category_id ? 'text-pink-500' : 'text-white'}`}>{item.category_name}</Text>}
               </View>
             </TouchableOpacity>
           )

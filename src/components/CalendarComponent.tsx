@@ -134,13 +134,13 @@ const CalendarComponent = ({
         <View>
             {/* Header */}
             <View className='flex-row items-center p-2 border-b justify-evenly border-b-white'>
-                <TouchableOpacity onPress={() => changeMonth('prev')}>
+                <TouchableOpacity onPress={() => changeMonth('prev')} className='p-2'>
                     <ArrowIcon direction='left' color='white' />
                 </TouchableOpacity>
                 <Text className='w-40 text-lg font-bold text-center text-yellow-200'>
                     Tháng {isCurrentMonth ? 'này' : `${(currentMonth + 1)}/${currentYear}`}
                 </Text>
-                <TouchableOpacity onPress={() => changeMonth('next')}>
+                <TouchableOpacity onPress={() => changeMonth('next')} className='p-2'>
                     <ArrowIcon direction='right' color='white' />
                 </TouchableOpacity>
             </View>
@@ -179,10 +179,10 @@ const CalendarComponent = ({
                         keyExtractor={(_, index) => index.toString()}
                         renderItem={({ item }) => {
                             if (!item.day) {
-                                return <View className='flex-1 p-2 border border-gray-200' />;
+                                return <View className='flex-1 p-1 border border-gray-200' />;
                             }
                             return (
-                                <View className='flex-1 p-2 border border-gray-200'>
+                                <View className='flex-1 p-1 border border-gray-200'>
                                     <Text className='text-sm font-bold'>{item.day}</Text>
                                     {displayMoney(item.income, 'text-blue-500')}
                                     {displayMoney(item.expense, 'text-red-500')}

@@ -36,3 +36,7 @@ export const removeFormatMoney = (amount: string) => {
 export const generateId = (): number => {
     return Math.floor(Math.random() * 1e9); // Generates a random number up to 1 billion
 }
+
+export function randomIntFromInterval(min: number, max: number) { // min and max included 
+    return Math.floor(Math.random() * (max - min + 1) + min);
+}

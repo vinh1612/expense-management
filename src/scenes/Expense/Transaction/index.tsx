@@ -1,4 +1,8 @@
-import { View, Text, SafeAreaView, Image, SectionList, FlatList, Pressable, Animated, Easing, ImageSourcePropType } from 'react-native'
+import {
+  View, Text, SafeAreaView, Image,
+  SectionList, FlatList, Pressable,
+  ImageSourcePropType, TouchableOpacity
+} from 'react-native'
 import React from 'react'
 import { formatDate, parseDateString } from '../../../utils/TimeUtil'
 import { formatMoney } from '../../../utils/NumberUtils';
@@ -7,11 +11,24 @@ import { Transaction, TransactionByMonth } from '../../../types/Transaction';
 import { TransactionCache } from '../../../storages/Storages';
 import EmptyList from '../../../components/EmptyList';
 import { useIsFocused } from '@react-navigation/native';
-import { TRANSACTION_SOURCE } from '../../../constants/Constant';
 import CalendarComponent from '../../../components/CalendarComponent';
 import DoubleArrowIcon from '../../../assets/svgIcons/DoubleArrowIcon';
+import ModalTransactionOption from './components/ModalTransactionOption';
+import { getTransactionSourceText } from '../../../utils/StringUtils';
+import ModalTransactionUpdate from './components/ModalTransactionUpdate';
+import ModalTransactionDelete from './components/ModalTransactionDelete';
+import { showToast } from '../../../utils/ToastUtils';
 
 const TransactionScreen = () => {
+
+  const [modalVisible, setModalVisible] = React.useState(false);
+  const [modalUpdateVisible, setModalUpdateVisible] = React.useState(false);
+  const [modalDeleteVisible, setModalDeleteVisible] = React.useState(false);
+  const [isRotated, setIsRotated] = React.useState(true);
+  const [itemSelected, setItemSelected] = React.useState<Transaction>(new Transaction());
+  const [currentMonth, setCurrentMonth] = React.useState(new Date().getMonth());
+  const [currentYear, setCurrentYear] = React.useState(new Date().getFullYear());
+  const isFocused = useIsFocused();
 
   const groupDataByTime = (data: Transaction[], month: number, year: number): TransactionByMonth[] => {
     return data.reduce((acc: TransactionByMonth[], item) => {
@@ -35,52 +52,49 @@ const TransactionScreen = () => {
 
   const transactions = useArray<Transaction>(TransactionCache.getInstance.getTransactionCache())
   const transactionsSection = useArray<TransactionByMonth>(
-    groupDataByTime(TransactionCache.getInstance.getTransactionCache(),
-      new Date().getMonth(),
-      new Date().getFullYear())
+    groupDataByTime(
+      TransactionCache.getInstance.getTransactionCache(),
+      currentMonth,
+      currentYear
+    )
   )
-  const isFocused = useIsFocused();
+
+  const getDataTransaction = () => {
+    transactions.set(TransactionCache.getInstance.getTransactionCache())
+    transactionsSection.set(
+      groupDataByTime(
+        TransactionCache.getInstance.getTransactionCache(),
+        currentMonth,
+        currentYear
+      )
+    )
+  }
 
   React.useEffect(() => {
     if (isFocused && TransactionCache.getInstance.getTransactionCache().length !== transactions.array.length) {
-      transactions.set(TransactionCache.getInstance.getTransactionCache())
-      transactionsSection.set(
-        groupDataByTime(
-          TransactionCache.getInstance.getTransactionCache(),
-          new Date().getMonth(),
-          new Date().getFullYear()
-        )
-      )
+      getDataTransaction()
     }
   }, [isFocused])
 
   const handleMonthChange = (newMonth: number, newYear: number) => {
+    setCurrentMonth(newMonth)
+    setCurrentYear(newYear);
     transactionsSection.set(groupDataByTime(transactions.array, newMonth, newYear));
   };
 
-  const getTransactionSourceText = (transactionSource: number) => {
-    switch (transactionSource) {
-      case TRANSACTION_SOURCE.CASH:
-        return 'Tiền Mặt'
-      case TRANSACTION_SOURCE.BANK:
-        return 'Tài Khoản Ngân Hàng'
-      default:
-        return 'Ví MoMo'
-    }
+  const handDeleteTransaction = (transaction_id: number) => {
+    showToast('Xóa giao dịch thành công')
+    TransactionCache.getInstance.removeTransactionWith(transaction_id)
+    getDataTransaction()
+    setItemSelected(new Transaction({ transaction_id: 0 }))
   }
 
-  const [isRotated, setIsRotated] = React.useState(true); // State to toggle rotation
-  const rotationValue = React.useRef(new Animated.Value(0)).current; // Ref for the animation value
-
-  const handlePress = () => {
-    setIsRotated(!isRotated); // Toggle the rotation state
-    Animated.timing(rotationValue, {
-      toValue: isRotated ? 0 : 1, // Rotate back and forth
-      duration: 500,
-      useNativeDriver: true, // Enable native driver for better performance
-      easing: Easing.inOut(Easing.ease),
-    }).start();
-  };
+  const handUpdateTransaction = (newTransaction: Transaction) => {
+    showToast('Chỉnh sửa giao dịch thành công')
+    TransactionCache.getInstance.updateTransactionWith(newTransaction)
+    getDataTransaction()
+    setItemSelected(new Transaction({ transaction_id: 0 }))
+  }
 
   return (
     <SafeAreaView className='bg-gray-900'>
@@ -92,7 +106,7 @@ const TransactionScreen = () => {
         ListHeaderComponent={
           <View className='h-full px-2 pt-2 space-y-6'>
             <View
-              className={`p-2 ${isRotated ? 'pb-4' : ''} bg-gray-700 border border-gray-600 rounded-xl`}
+              className={`p-2 ${isRotated ? 'pb-4' : 'pb-0'} bg-gray-700 border border-gray-600 rounded-xl`}
             >
               <CalendarComponent
                 data={transactionsSection.array}
@@ -102,7 +116,7 @@ const TransactionScreen = () => {
 
               <Pressable
                 className='absolute bottom-[-16px] self-center bg-gray-700 px-8 pt-2 pb-1 rounded-full'
-                onPress={handlePress}
+                onPress={() => setIsRotated(!isRotated)}
               >
                 <DoubleArrowIcon direction={isRotated ? 'up' : 'down'} color='gray' size={18} />
               </Pressable>
@@ -116,8 +130,15 @@ const TransactionScreen = () => {
               keyExtractor={(item) => item.transaction_id.toString()}
               renderItem={({ item }) => {
                 const isIncome = item.transaction_type.is_income ? '+' : '-'
+                const colorMoney = item.transaction_type.is_income ? 'text-green-600' : 'text-red-600'
                 return (
-                  <View className='flex flex-row items-center justify-between pb-3 space-x-2'>
+                  <TouchableOpacity
+                    className='flex flex-row items-center justify-between pb-3 space-x-2'
+                    onLongPress={() => {
+                      setItemSelected(item)
+                      setModalVisible(true)
+                    }}
+                  >
                     <Image
                       source={typeof item.transaction_type.category_source === 'string'
                         ? { uri: item.transaction_type.category_source }
@@ -131,13 +152,14 @@ const TransactionScreen = () => {
                         <Text className='text-white'>{item.transaction_note}</Text>
                       </View>
                       <View className='items-end flex-none'>
-                        <Text className='text-white'>{isIncome + formatMoney(item.transaction_amount)} đ</Text>
+                        <Text className={`text-white ${colorMoney} font-bold`}>{isIncome + formatMoney(item.transaction_amount)} đ</Text>
                         <Text className='text-white'>{getTransactionSourceText(item.source)}</Text>
                       </View>
                     </View>
-                  </View>
+                  </TouchableOpacity>
                 )
-              }} renderSectionHeader={({ section: { date_time } }) => {
+              }}
+              renderSectionHeader={({ section: { date_time } }) => {
                 const { formattedDate, dayOfWeek } = formatDate(date_time)
                 return (
                   <View
@@ -151,6 +173,47 @@ const TransactionScreen = () => {
             />
           </View>
         }
+      />
+
+      <ModalTransactionOption
+        modalVisible={modalVisible}
+        setModalVisible={(visible) => {
+          setModalVisible(visible)
+          setItemSelected(new Transaction({ transaction_id: 0 }))
+        }}
+        actionChosen={(action) => {
+          setModalVisible(false)
+          if (action === 'delete') {
+            setModalDeleteVisible(true)
+          } else {
+            setModalUpdateVisible(true)
+          }
+        }}
+      />
+
+      <ModalTransactionUpdate
+        modalVisible={modalUpdateVisible}
+        itemSelected={itemSelected}
+        setModalVisible={(visible) => {
+          setModalUpdateVisible(visible)
+          setItemSelected(new Transaction({ transaction_id: 0 }))
+        }}
+        setConfirmUpdate={(newValue) => {
+          setModalUpdateVisible(false)
+          handUpdateTransaction(newValue)
+        }}
+      />
+
+      <ModalTransactionDelete
+        modalVisible={modalDeleteVisible}
+        setModalVisible={() => {
+          setModalDeleteVisible(false)
+          setItemSelected(new Transaction({ transaction_id: 0 }))
+        }}
+        setConfirmDelete={() => {
+          setModalDeleteVisible(false)
+          handDeleteTransaction(itemSelected.transaction_id)
+        }}
       />
     </SafeAreaView>
   )

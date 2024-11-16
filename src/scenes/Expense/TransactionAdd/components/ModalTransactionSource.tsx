@@ -32,10 +32,10 @@ const ModalTransactionSource = ({ sourceDefault, modalVisible, setModalVisible }
             transparent
             visible={modalVisible}
         >
-            <View className='justify-center h-full px-4' style={{ backgroundColor: 'rgba(0, 0, 0, 0.64)' }}>
-                <View className='bg-white rounded-lg'>
-                    <Text className='py-2 text-xl font-bold text-center text-gray-900'>Chọn nguồn tiền</Text>
-                    <View className="px-2 py-8 bg-gray-100">
+            <View className='justify-center h-full px-4 bg-black/60'>
+                <View className='bg-gray-900 border border-gray-700 rounded-lg'>
+                    <Text className='py-2 text-xl font-bold text-center text-white'>Chọn nguồn tiền</Text>
+                    <View className="px-2 py-8 bg-gray-800">
                         <FlatList
                             data={transactionSource}
                             showsVerticalScrollIndicator={false}
@@ -50,9 +50,9 @@ const ModalTransactionSource = ({ sourceDefault, modalVisible, setModalVisible }
                                         }}
                                         key={item.id}
                                     >
-                                        <View className={`p-1 space-y-2 items-center justify-center w-full h-full rounded-xl ${idSelected === item.id ? 'border-2 border-pink-300 bg-pink-100' : 'bg-white'}`} >
+                                        <View className={`p-1 space-y-2 items-center justify-center w-full h-full rounded-xl ${idSelected === item.id ? 'border-2 border-pink-300 bg-pink-100' : 'bg-gray-900'}`} >
                                             {item.image}
-                                            <Text className={`text-center ${idSelected === item.id ? 'text-pink-500' : 'text-gray-500'}`}>{item.title}</Text>
+                                            <Text className={`text-center ${idSelected === item.id ? 'text-pink-500' : 'text-white'}`}>{item.title}</Text>
                                         </View>
                                     </TouchableOpacity>
                                 )

@@ -7,7 +7,7 @@ const WarehouseScreen = () => {
     <SafeAreaView>
       <View className='flex items-center justify-center h-full'>
         <FastImage
-          source={require('../../assets/images/coming-soon.gif')}
+          source={require('../../assets/imageGIFs/coming-soon.gif')}
           resizeMode={FastImage.resizeMode.contain}
           className='w-full h-28'
         />

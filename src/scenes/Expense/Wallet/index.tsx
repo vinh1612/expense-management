@@ -1,9 +1,10 @@
 import { View, Text, SafeAreaView, Animated, FlatList } from 'react-native'
 import React from 'react'
-import { formatMoney } from '../../../utils/NumberUtils';
+import { formatMoney, randomIntFromInterval } from '../../../utils/NumberUtils';
 import { WalletCache } from '../../../storages/Storages';
 import { Wallet } from '../../../types';
 import { useIsFocused } from '@react-navigation/native';
+import FastImage from 'react-native-fast-image';
 
 const WalletScreen = () => {
 
@@ -84,40 +85,49 @@ const WalletScreen = () => {
     )
   }
 
+  const imageGIFsFunny = [
+    require('../../../assets/imageGIFs/goma-cat-toilet.gif'),
+    require('../../../assets/imageGIFs/peach-calm-mind.gif'),
+    require('../../../assets/imageGIFs/peach-goma-fan.gif'),
+    require('../../../assets/imageGIFs/peach-goma-sleep.gif'),
+    require('../../../assets/imageGIFs/peach-goma-tease.gif'),
+    require('../../../assets/imageGIFs/peach-goma-tease-2.gif'),
+    require('../../../assets/imageGIFs/peach-too-fat.gif'),
+  ]
+
   return (
     <SafeAreaView className='bg-gray-900'>
-      <FlatList
-        data={[]}
-        renderItem={() => null}
-        showsVerticalScrollIndicator={false}
-        className='h-full'
-        ListHeaderComponent={
-          <View className='h-full px-2 py-4 space-y-4'>
-            <View className='flex p-4 space-y-4 bg-gray-700 border border-gray-600 rounded-lg'>
-              <View className='flex flex-row justify-between'>
-                <Text className='text-base font-extrabold text-white'>Tài khoản của tôi</Text>
-                <Text className='text-base font-bold text-white'>{formatMoney(wallet.total_amount)} VND</Text>
-              </View>
-
-              {renderViewProgress({
-                progressTitle: 'Thu nhập',
-                progressColor: '#FC00A8',
-                progressWidth: animatedWidthIncome,
-                amount: `+${formatMoney(wallet.total_income)}`,
-                setMaxWidth: setMaxWidthIncome
-              })}
-
-              {renderViewProgress({
-                progressTitle: 'Chi tiêu',
-                progressColor: '#46BB1D',
-                progressWidth: animatedWidthExpenditure,
-                amount: `-${formatMoney(wallet.total_expenditure)}`,
-                setMaxWidth: setMaxWidthExpenditure
-              })}
-            </View>
+      <View className='h-full px-2 py-4 space-y-4'>
+        <View className='flex p-4 space-y-4 bg-gray-700 border border-gray-600 rounded-lg'>
+          <View className='flex flex-row justify-between'>
+            <Text className='text-base font-extrabold text-white'>Tài khoản của tôi</Text>
+            <Text className='text-base font-bold text-white'>{formatMoney(wallet.total_amount)} VND</Text>
           </View>
-        }
-      />
+
+          {renderViewProgress({
+            progressTitle: 'Thu nhập',
+            progressColor: '#FC00A8',
+            progressWidth: animatedWidthIncome,
+            amount: `+${formatMoney(wallet.total_income)}`,
+            setMaxWidth: setMaxWidthIncome
+          })}
+
+          {renderViewProgress({
+            progressTitle: 'Chi tiêu',
+            progressColor: '#46BB1D',
+            progressWidth: animatedWidthExpenditure,
+            amount: `-${formatMoney(wallet.total_expenditure)}`,
+            setMaxWidth: setMaxWidthExpenditure
+          })}
+        </View>
+        <View className='flex justify-center flex-1 bg-gray-700 border border-gray-600 rounded-lg'>
+          <FastImage
+            source={imageGIFsFunny[randomIntFromInterval(0, imageGIFsFunny.length - 1)]}
+            resizeMode={FastImage.resizeMode.center}
+            className='w-full h-full'
+          />
+        </View>
+      </View>
     </SafeAreaView>
   )
 }

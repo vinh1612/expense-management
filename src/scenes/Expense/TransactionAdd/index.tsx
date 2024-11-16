@@ -17,6 +17,77 @@ import { showToast } from '../../../utils/ToastUtils';
 import ModalTransactionSource from './components/ModalTransactionSource';
 import { TRANSACTION_SOURCE } from '../../../constants/Constant';
 import ArrowIcon from '../../../assets/svgIcons/ArrowIcon';
+import { getTransactionSourceText } from '../../../utils/StringUtils';
+
+interface ViewInputLabel {
+  contentLabel: string;
+  onChangeText?: (text: string) => void;
+  onPressButton?: () => void;
+  value: string;
+  inputMode?: InputModeOptions;
+  maxLength?: number;
+  style?: TextStyle;
+  isRequired?: boolean;
+  icon?: React.ReactNode
+  readonly?: boolean;
+  placeholder?: string;
+}
+
+export function renderViewInputLabel({
+  contentLabel,
+  value,
+  inputMode,
+  maxLength,
+  style,
+  isRequired = true,
+  placeholder,
+  icon,
+  readonly,
+  onPressButton,
+  onChangeText
+}: ViewInputLabel) {
+  return (
+    icon ? (
+      <TouchableOpacity
+        className='p-3 bg-gray-700 border border-gray-600 rounded-lg'
+        onPress={onPressButton}
+      >
+        <Text className='text-white'>{contentLabel}{isRequired && <Text className='text-red-600'> *</Text>}</Text>
+        <View className='flex flex-row items-center justify-between'>
+          <TextInput
+            className='pt-1 pb-0 text-white'
+            multiline
+            numberOfLines={1}
+            onChangeText={onChangeText}
+            value={value}
+            inputMode={inputMode}
+            maxLength={maxLength}
+            style={style}
+            readOnly
+            placeholder={placeholder}
+          />
+          {icon}
+        </View>
+      </TouchableOpacity>
+    ) : (
+      <View className='p-3 bg-gray-700 border border-gray-600 rounded-lg'>
+        <Text className='text-white'>{contentLabel}{isRequired && <Text className='text-red-600'> *</Text>}</Text>
+        <TextInput
+          className='pt-1 pb-0 text-white'
+          multiline
+          numberOfLines={1}
+          onChangeText={onChangeText}
+          value={value}
+          inputMode={inputMode}
+          maxLength={maxLength}
+          style={style}
+          readOnly={readonly}
+          placeholder={placeholder}
+        />
+      </View>
+    )
+  )
+}
 
 const TransactionAddScreen = ({ navigation }: any) => {
 
@@ -30,76 +101,6 @@ const TransactionAddScreen = ({ navigation }: any) => {
   const [showDatePicker, setShowDatePicker] = React.useState(false);
   const [isShowModalType, setIsShowModalType] = React.useState(false);
   const [isShowModalSource, setIsShowModalSource] = React.useState(false);
-
-  interface ViewInputLabel {
-    contentLabel: string;
-    onChangeText?: (text: string) => void;
-    onPressButton?: () => void;
-    value: string;
-    inputMode?: InputModeOptions;
-    maxLength?: number;
-    style?: TextStyle;
-    isRequired?: boolean;
-    icon?: React.ReactNode
-    readonly?: boolean;
-    placeholder?: string;
-  }
-
-  function renderViewInputLabel({
-    contentLabel,
-    value,
-    inputMode,
-    maxLength,
-    style,
-    isRequired = true,
-    placeholder,
-    icon,
-    readonly,
-    onPressButton,
-    onChangeText
-  }: ViewInputLabel) {
-    return (
-      icon ? (
-        <TouchableOpacity
-          className='p-3 bg-gray-700 border border-gray-600 rounded-lg'
-          onPress={onPressButton}
-        >
-          <Text className='text-white'>{contentLabel}{isRequired && <Text className='text-red-600'> *</Text>}</Text>
-          <View className='flex flex-row items-center justify-between'>
-            <TextInput
-              className='pt-1 pb-0 text-white'
-              multiline
-              numberOfLines={1}
-              onChangeText={onChangeText}
-              value={value}
-              inputMode={inputMode}
-              maxLength={maxLength}
-              style={style}
-              readOnly
-              placeholder={placeholder}
-            />
-            {icon}
-          </View>
-        </TouchableOpacity>
-      ) : (
-        <View className='p-3 bg-gray-700 border border-gray-600 rounded-lg'>
-          <Text className='text-white'>{contentLabel}{isRequired && <Text className='text-red-600'> *</Text>}</Text>
-          <TextInput
-            className='pt-1 pb-0 text-white'
-            multiline
-            numberOfLines={1}
-            onChangeText={onChangeText}
-            value={value}
-            inputMode={inputMode}
-            maxLength={maxLength}
-            style={style}
-            readOnly={readonly}
-            placeholder={placeholder}
-          />
-        </View>
-      )
-    )
-  }
 
   const handleChooseTime = (dateTime: Date) => {
     setTransactionDate(dateTime)
@@ -142,17 +143,6 @@ const TransactionAddScreen = ({ navigation }: any) => {
     setTransactionDate(new Date())
     setTransactionNote('')
     navigation.navigate(AppScreenEnum.TRANSACTION_BOOK_NAVIGATOR)
-  }
-
-  const getTransactionSourceText = (transactionSource: number) => {
-    switch (transactionSource) {
-      case TRANSACTION_SOURCE.CASH:
-        return 'Tiền Mặt'
-      case TRANSACTION_SOURCE.BANK:
-        return 'Tài Khoản Ngân Hàng'
-      default:
-        return 'Ví MoMo'
-    }
   }
 
   return (
