@@ -18,7 +18,7 @@ const ExpenseNavigator = () => {
       screenOptions={{
         headerShown: false,
       }}
-      tabBar={props => <CustomExpenseTabBar {...props} />}
+      tabBar={CustomExpenseTabBar}
     >
       <Tab.Screen
         name={AppScreenEnum.WALLET_NAVIGATOR}
