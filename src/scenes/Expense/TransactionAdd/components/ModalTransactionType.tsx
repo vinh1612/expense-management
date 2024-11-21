@@ -6,6 +6,7 @@ import ExpenditureComponent from './ExpenditureComponent';
 import ButtonComponent from '../../../../components/ButtonComponent';
 import AppScreenEnum from '../../../../navigation/enums/AppScreenEnum';
 import { TransactionCategory } from '../../../../types/Transaction';
+import { showToast } from '../../../../utils/ToastUtils';
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -17,7 +18,7 @@ interface ModalTransactionTypeProps {
 
 const ModalTransactionType = ({ modalVisible, setModalVisible, selectedTransactionCategory }: ModalTransactionTypeProps) => {
 
-    const [dataSelected, setDataSelected] = React.useState<TransactionCategory>(new TransactionCategory())
+    const [dataSelected, setDataSelected] = React.useState<TransactionCategory>(new TransactionCategory({ category_id: 0 }))
 
     React.useEffect(() => {
         if (selectedTransactionCategory) {
@@ -56,23 +57,38 @@ const ModalTransactionType = ({ modalVisible, setModalVisible, selectedTransacti
                         <Tab.Screen
                             options={{ tabBarLabel: 'Chi tiêu' }}
                             name={AppScreenEnum.EXPENDITURE_SCREEN}
-                            children={() => <ExpenditureComponent dataDefault={dataSelected} onItemPress={setDataSelected} />}
-                        />
+                        >
+                            {() => <ExpenditureComponent dataDefault={dataSelected} onItemPress={setDataSelected} />}
+                        </Tab.Screen>
                         <Tab.Screen
                             options={{ tabBarLabel: 'Thu nhập' }}
                             name={AppScreenEnum.INCOME_SCREEN}
-                            children={() => <IncomeComponent dataDefault={dataSelected} onItemPress={setDataSelected} />}
-                        />
+                        >
+                            {() => <IncomeComponent dataDefault={dataSelected} onItemPress={setDataSelected} />}
+                        </Tab.Screen>
                     </Tab.Navigator>
 
                     <View className='flex flex-row justify-center gap-x-4'>
-                        <ButtonComponent title='HỦY' className='bg-red-500' onPress={() => setModalVisible(false)} />
-                        <ButtonComponent title='CHỌN' style={{ backgroundColor: '#0071BB' }} onPress={() => setModalVisible(false, dataSelected)} />
+                        <ButtonComponent
+                            title='HỦY'
+                            className='bg-red-500'
+                            onPress={() => setModalVisible(false)}
+                        />
+                        <ButtonComponent
+                            title='CHỌN'
+                            className='bg-[#0071BB]'
+                            onPress={() => {
+                                if (dataSelected.category_id === 0) {
+                                    showToast('Vui lòng chọn danh mục giao dịch!')
+                                } else {
+                                    setModalVisible(false, dataSelected)
+                                }
+                            }}
+                        />
                     </View>
                 </View>
             </View>
         </Modal>
     )
 }
-
 export default ModalTransactionType

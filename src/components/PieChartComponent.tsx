@@ -1,26 +1,17 @@
 import React from 'react'
-import { PieChart } from "react-native-gifted-charts";
+import { PieChart, pieDataItem } from "react-native-gifted-charts";
 
-const PieChartComponent = () => {
-
-    const pieData = [
-        { value: 47, color: '#FFA84A', text: '47%' },
-        { value: 20, color: '#FB67CA', text: '20%' },
-        { value: 23, color: '#9B88ED', text: '23%' },
-        { value: 40, color: '#04BFDA', text: '40%' },
-    ];
+const PieChartComponent = ({ pieData }: { pieData: pieDataItem[] }) => {
 
     return (
         <PieChart
-            data={pieData}
             donut
-            innerCircleColor={'#111827'}
+            data={pieData}
+            innerCircleColor={'#374151'}
             showText
-            textColor="white"
-            textBackgroundColor='transparent'
-            focusOnPress
             showValuesAsLabels
-            showTextBackground
+            textColor='white'
+            textSize={18}
         />
     )
 }
