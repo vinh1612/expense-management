@@ -18,7 +18,7 @@ const ArrowIcon = ({ direction = 'right', color = 'black', size = 24, width = 2 
     };
 
     return (
-        <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+        <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" className='w-full h-full'>
             <Path
                 d="M9 5L16 12L9 19"
                 stroke={color}

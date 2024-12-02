@@ -1,4 +1,4 @@
-import { View, Text, SafeAreaView, Animated, FlatList } from 'react-native'
+import { View, Text, SafeAreaView, Animated } from 'react-native'
 import React from 'react'
 import { formatMoney, randomIntFromInterval } from '../../../utils/NumberUtils';
 import { WalletCache } from '../../../storages/Storages';

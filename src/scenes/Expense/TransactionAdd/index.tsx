@@ -193,7 +193,7 @@ const TransactionAddScreen = ({ navigation }: any) => {
 
             <View className='flex flex-row justify-center gap-x-4'>
               <ButtonComponent title='HỦY' className='bg-red-500' onPress={handleClearData} />
-              <ButtonComponent title='LƯU' style={{ backgroundColor: '#0071BB' }} onPress={handleSaveTransaction} />
+              <ButtonComponent title='LƯU' className='bg-[#0071BB]' onPress={handleSaveTransaction} />
             </View>
           </View>
         </ScrollView>

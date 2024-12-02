@@ -1,11 +1,12 @@
 import { MMKV } from 'react-native-mmkv'
-import { Transaction, Wallet } from '../types/index';
+import { Transaction, Wallet, CalendarStyle } from '../types/index';
 
 export const storage = new MMKV()
 
 const KEY_CACHE = {
   TRANSACTION: "KEY_TRANSACTION_CACHE",
   WALLET: "KEY_WALLET_CACHE",
+  CALENDAR_STYLE: "CALENDAR_STYLE",
 }
 
 export class TransactionCache {
@@ -130,6 +131,38 @@ export class WalletCache {
     } catch (error) {
       console.error('Error retrieving transactions for wallet:', error);
       return [];
+    }
+  }
+}
+
+export class CalendarStyleCache {
+  private static instance: CalendarStyleCache;
+
+  private constructor() { }
+
+  static get getInstance(): CalendarStyleCache {
+    if (!this.instance) {
+      this.instance = new CalendarStyleCache()
+    }
+    return this.instance
+  }
+
+  saveCalendarStyleCache(style: CalendarStyle) {
+    storage.set(KEY_CACHE.CALENDAR_STYLE, JSON.stringify(style));
+  }
+
+  getCalendarStyleCache(): CalendarStyle {
+    try {
+      const cached = storage.getString(KEY_CACHE.CALENDAR_STYLE);
+      return cached ? JSON.parse(cached) as CalendarStyle : new CalendarStyle();
+    } catch (error) {
+      return new CalendarStyle();
+    }
+  }
+
+  clearCalendarStyleCache() {
+    if (storage.contains(KEY_CACHE.CALENDAR_STYLE)) {
+      storage.delete(KEY_CACHE.CALENDAR_STYLE)
     }
   }
 }

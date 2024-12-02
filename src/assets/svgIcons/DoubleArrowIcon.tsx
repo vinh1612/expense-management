@@ -34,7 +34,7 @@ const DoubleArrowIcon: React.FC<DoubleArrowIconProps> = ({
             strokeLinecap="round"
             strokeLinejoin="round"
             transform={rotations[direction]}
-            className='transition-all duration-500 ease-in-out'
+            className='w-full h-full transition-all duration-500 ease-in-out'
         >
             <Path d="M13 17l5-5-5-5" />
             <Path d="M6 17l5-5-5-5" />

@@ -50,7 +50,7 @@ const ExpenditureComponent = ({ onItemPress, dataDefault }: ExpenditureComponent
   }
 
   return (
-    <View className='items-center justify-center flex-1 px-1 py-2 bg-gray-800'>
+    <View className='flex items-center justify-center h-full p-2 bg-gray-800'>
       <FlatList
         data={expenditures.array}
         showsVerticalScrollIndicator={false}

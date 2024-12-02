@@ -10,7 +10,7 @@ const MoMoIcon = ({ type = 'circle', size = 336 }: MoMoIconProps) => {
     switch (type) {
         case 'transparent':
             return (
-                <Svg width={size} height={size} viewBox="0 0 60 60" >
+                <Svg width={size} height={size} viewBox="0 0 60 60" className='w-full h-full'>
                     <G stroke="none" strokeWidth="1" fill="none" fillRule="evenodd">
                         <G>
                             <Path
