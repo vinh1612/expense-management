@@ -99,8 +99,8 @@ const WalletScreen = () => {
     <SafeAreaView className='bg-gray-900'>
       <View className='h-full px-2 py-4 space-y-4'>
         <View className='flex p-4 space-y-4 bg-gray-700 border border-gray-600 rounded-lg'>
-          <View className='flex flex-row justify-between'>
-            <Text className='text-base font-extrabold text-white'>Tài khoản của tôi</Text>
+          <View className='flex flex-row items-center justify-between'>
+            <Text className='text-2xl font-extrabold text-white'>Tài khoản của tôi</Text>
             <Text className='text-base font-bold text-white'>{formatMoney(wallet.total_amount)} VND</Text>
           </View>
 

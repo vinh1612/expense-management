@@ -10,24 +10,19 @@ import { RGBAColorStyle } from '../types/CalendarStyle';
 import { showToast } from '../utils/ToastUtils';
 import { CALENDAR_STYLE } from '../constants/Constant';
 
-interface Week {
-    firstDay: Date;
-    lastDay: Date;
-}
-
 interface CustomDateTimePickerProps {
     isShow: boolean;
     onClose: () => void;
-    onChange?: (week: Week) => void;
-    type?: 'day' | 'week';
+    onConfirm: (date: { firstDay: Date; lastDay: Date } | Date) => void;
+    type?: 'day' | 'weekday';
 }
 
 const CustomDateTimePicker: React.FC<CustomDateTimePickerProps> = ({
-    isShow, type = 'day', onClose, onChange
+    isShow, type = 'day', onClose, onConfirm
 }) => {
 
     const [date, setDate] = React.useState(new Date());
-    const [week, setWeek] = React.useState<Week>({
+    const [week, setWeek] = React.useState<{ firstDay: Date; lastDay: Date }>({
         firstDay: startOfWeek(new Date(), { weekStartsOn: 1 }),
         lastDay: endOfWeek(new Date(), { weekStartsOn: 1 }),
     });
@@ -43,10 +38,6 @@ const CustomDateTimePicker: React.FC<CustomDateTimePickerProps> = ({
     const [calendarTypeStyle, setCalendarTypeStyle] = React.useState(CALENDAR_STYLE.THEME);
     const [initialColor, setInitialColor] = React.useState(colorStyle.background_color);
 
-    React.useEffect(() => {
-        onChange && onChange(week);
-    }, [week]);
-
     const convertDate = (date: Date): string => {
         return `${String(date.getDate()).padStart(2, "0")}/${String(date.getMonth() + 1).padStart(2, "0")}/${date.getFullYear()}`;
     };
@@ -55,9 +46,14 @@ const CustomDateTimePicker: React.FC<CustomDateTimePickerProps> = ({
         setDate((prevDate) => (next ? addMonths(prevDate, 1) : subMonths(prevDate, 1)));
     };
 
+    const handleConfirmDate = () => {
+        type === 'weekday' ? onConfirm(week) : onConfirm(date);
+        onClose();
+    };
+
     const handleSelectCurrentDate = () => {
         setDate(new Date());
-        if (type === 'week') {
+        if (type === 'weekday') {
             setWeek({
                 firstDay: startOfWeek(new Date(), { weekStartsOn: 1 }),
                 lastDay: endOfWeek(new Date(), { weekStartsOn: 1 }),
@@ -131,7 +127,7 @@ const CustomDateTimePicker: React.FC<CustomDateTimePickerProps> = ({
         // Add days from the previous month
         for (let day = totalDaysInPrevMonth - firstWeekday + 1; day <= totalDaysInPrevMonth; day++) {
             const currentDate = new Date(prevMonthDate.getFullYear(), prevMonthDate.getMonth(), day);
-            const isSelected = type === 'week' && currentDate >= week.firstDay && currentDate <= week.lastDay;
+            const isSelected = type === 'weekday' && currentDate >= week.firstDay && currentDate <= week.lastDay;
             daysArray.push(
                 <TouchableOpacity
                     key={`prev-${day}`}
@@ -172,7 +168,7 @@ const CustomDateTimePicker: React.FC<CustomDateTimePickerProps> = ({
         const nextMonthDays = (daysArray.length > 35 ? 42 : 35) - daysArray.length; // Ensure 5 or 6 rows of 7 days
         for (let day = 1; day <= nextMonthDays; day++) {
             const currentDate = new Date(date.getFullYear(), date.getMonth() + 1, day);
-            const isSelected = type === 'week' && currentDate >= week.firstDay && currentDate <= week.lastDay;
+            const isSelected = type === 'weekday' && currentDate >= week.firstDay && currentDate <= week.lastDay;
             daysArray.push(
                 <TouchableOpacity
                     key={`next-${day}`}
@@ -195,7 +191,7 @@ const CustomDateTimePicker: React.FC<CustomDateTimePickerProps> = ({
                         className='flex flex-col p-6 space-y-2 border border-gray-600 rounded-t-lg'
                         style={{ backgroundColor: backgroundHeaderColor }}
                     >
-                        {type === 'week' ? (
+                        {type === 'weekday' ? (
                             <>
                                 <Text className='text-base' style={{ color: textColor }}>{
                                     convertDate(week.firstDay)} - {convertDate(week.lastDay)}
@@ -285,7 +281,7 @@ const CustomDateTimePicker: React.FC<CustomDateTimePickerProps> = ({
                                 className="p-2 rounded-md"
                             >
                                 <Text className="text-base font-bold text-center" style={{ color: backgroundHeaderColor }} >
-                                    {type === 'week' ? 'Tuần này' : 'Hôm nay'}
+                                    {type === 'weekday' ? 'Tuần này' : 'Hôm nay'}
                                 </Text>
                             </TouchableOpacity>
                             <View className='flex flex-row space-x-4'>
@@ -301,7 +297,7 @@ const CustomDateTimePicker: React.FC<CustomDateTimePickerProps> = ({
                                     </Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity
-                                    onPress={() => { }}
+                                    onPress={() => handleConfirmDate()}
                                     className="p-2 rounded-md"
                                 >
                                     <Text className="text-base font-bold text-center" style={{ color: backgroundHeaderColor }} >

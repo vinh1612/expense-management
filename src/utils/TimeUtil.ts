@@ -1,5 +1,6 @@
 import { format, parse } from 'date-fns'
 import { vi } from 'date-fns/locale'
+import dayjs from 'dayjs';
 
 export const getTodayDate = (): string => {
   const today = new Date();
@@ -13,14 +14,11 @@ export const formatDate = (dateString: string) => {
   const date = parse(dateString, 'dd/MM/yyyy', new Date()) // Parse the string to a Date object
   const formattedDate = format(date, 'dd/MM/yyyy') // Format the date as 'dd/MM/yyyy'
   const dayOfWeek = format(date, 'EEEE', { locale: vi }) // Get the day of the week in Vietnamese
-
   return { formattedDate, dayOfWeek }
 }
 
-export const convertDateFormat = (
-  dateString: string,
-  currentFormat: string,
-  desiredFormat: string
+export const convertDateString = (
+  { dateString, currentFormat, desiredFormat }: { dateString: string, currentFormat: string, desiredFormat: string }
 ) => {
   try {
     // Parse the date using the current format
@@ -31,6 +29,11 @@ export const convertDateFormat = (
     console.error("Error converting date:", error);
     return getTodayDate();  // Return null or an error message if conversion fails
   }
+};
+
+export const convertDateFormatToString = ({ date, format }: { date: Date, format: string }) => {
+  const dateString = dayjs(date).format(format)
+  return dateString;
 };
 
 export const parseDateString = (dateString: string) => {

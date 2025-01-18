@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Modal, FlatList } from 'react-native';
+import { View, Text, TouchableOpacity, Modal, FlatList, Platform } from 'react-native';
 
 interface CustomMonthYearPickerProps {
     showPicker: boolean;
@@ -35,34 +35,49 @@ const CustomMonthYearPicker: React.FC<CustomMonthYearPickerProps> = ({
 
     React.useEffect(() => {
         if (showPicker) {
-            yearFlatListRef.current?.scrollToOffset({
-                offset: years.indexOf(selectedYear) * ITEM_HEIGHT,
-                animated: false,
-            });
-            if (mode === 'month') {
-                monthFlatListRef.current?.scrollToOffset({
-                    offset: selectedMonth * ITEM_HEIGHT,
-                    animated: false,
+            const scrollToPositions = () => {
+                yearFlatListRef.current?.scrollToOffset({
+                    offset: years.indexOf(selectedYear) * ITEM_HEIGHT,
+                    animated: true
                 });
-            }
+                if (mode === 'month') {
+                    monthFlatListRef.current?.scrollToOffset({
+                        offset: selectedMonth * ITEM_HEIGHT,
+                        animated: true
+                    });
+                }
+            };
+
+            Platform.OS === 'ios'
+                ? requestAnimationFrame(() => setTimeout(scrollToPositions, 600))
+                : scrollToPositions();
         }
     }, [showPicker]);
 
     const handleConfirm = () => {
-        const selectedDate = new Date(selectedYear, selectedMonth, 1); // First day of selected month
+        const selectedDate = new Date(selectedYear, selectedMonth, 1);
         onConfirm(selectedDate);
+        onClose();
     };
 
     const renderItem = (item: React.ReactNode, index: number, selectedIndex: number) => {
         const isSelected = index === selectedIndex;
         return (
-            <View className={`justify-center items-center h-12 ${isSelected ? 'border-t border-b border-t-white border-b-white' : ''}`}>
+            <View className='items-center justify-center h-12'>
                 <Text className={`text-lg ${isSelected ? 'text-white' : 'text-gray-400'}`}>
                     {item}
                 </Text>
             </View>
         );
     };
+
+    const renderViewSelected = () => {
+        return (
+            <View
+                className='absolute left-0 w-full h-12 border-t border-b top-12 border-t-white border-b-white'
+            ></View>
+        )
+    }
 
     return (
         <Modal
@@ -72,11 +87,12 @@ const CustomMonthYearPicker: React.FC<CustomMonthYearPickerProps> = ({
             onRequestClose={onClose}
         >
             <View className="justify-center flex-1 px-6 bg-black/50">
-                <View className='p-5 space-y-2 bg-gray-700 border border-gray-600 rounded-lg'>
+                <View className='p-5 space-y-4 bg-gray-700 border border-gray-600 rounded-lg'>
                     <Text className='text-2xl text-center text-white'>Chọn thời gian</Text>
-                    <View className="flex-row justify-center px-4 space-x-3">
+                    <View className="flex-row justify-center px-4 space-x-4">
                         {mode === 'month' && (
-                            <View className='flex-1'>
+                            <View className='relative flex-1'>
+                                {renderViewSelected()}
                                 <FlatList
                                     ref={monthFlatListRef}
                                     data={months}
@@ -103,7 +119,8 @@ const CustomMonthYearPicker: React.FC<CustomMonthYearPickerProps> = ({
                                 />
                             </View>
                         )}
-                        <View className='flex-1'>
+                        <View className='relative flex-1'>
+                            {renderViewSelected()}
                             <FlatList
                                 ref={yearFlatListRef}
                                 data={years}

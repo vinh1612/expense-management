@@ -9,8 +9,7 @@ import ButtonComponent from '../../../../components/ButtonComponent';
 import { TransactionCategory } from '../../../../types/Transaction';
 import ModalTransactionType from '../../TransactionAdd/components/ModalTransactionType';
 import ModalTransactionSource from '../../TransactionAdd/components/ModalTransactionSource';
-import dayjs from 'dayjs';
-import { getTodayDate } from '../../../../utils/TimeUtil';
+import { convertDateFormatToString, getTodayDate } from '../../../../utils/TimeUtil';
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { showToast } from '../../../../utils/ToastUtils';
 
@@ -49,7 +48,7 @@ const ModalTransactionUpdate = ({ modalVisible, itemSelected, setModalVisible, s
 
     const handleChooseTime = (dateTime: Date) => {
         setTransactionDate(dateTime)
-        setTransactionTime(dayjs(dateTime).format('DD/MM/YYYY'))
+        setTransactionTime(convertDateFormatToString({ date: dateTime, format: 'DD/MM/YYYY' }))
         setShowDatePicker(false)
     }
 

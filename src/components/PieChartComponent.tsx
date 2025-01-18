@@ -11,7 +11,7 @@ const PieChartComponent = ({ pieData }: { pieData: pieDataItem[] }) => {
             showText
             showValuesAsLabels
             textColor='white'
-            textSize={18}
+            textSize={16}
         />
     )
 }

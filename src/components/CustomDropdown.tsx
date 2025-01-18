@@ -75,7 +75,7 @@ const DropdownSelect: React.FC<DropdownSelectProps> = ({
                     onPress={() => setIsVisible(false)}
                 >
                     <View
-                        className='absolute w-full bg-gray-800 border border-gray-600 rounded-b-lg shadow-lg'
+                        className='absolute w-full p-1 bg-gray-800 border border-gray-600 rounded-b-lg shadow-lg'
                         style={{
                             top: (dropdownPosition?.y ?? 0) + (dropdownPosition?.height ?? 0) + 8,
                             left: dropdownPosition?.x ?? 0,
@@ -88,7 +88,7 @@ const DropdownSelect: React.FC<DropdownSelectProps> = ({
                             keyExtractor={(item) => item.id.toString()}
                             renderItem={({ item }) => (
                                 <TouchableOpacity
-                                    className={`m-1 flex flex-row justify-between items-center space-x-2 px-4 py-2 rounded-md ${item.id === selectedId ? 'bg-gray-900' : ''}`}
+                                    className={`flex flex-row justify-between items-center px-4 py-2 rounded-md ${item.id === selectedId ? 'bg-gray-900' : ''}`}
                                     onPress={() => handleSelect(item)}
                                 >
                                     <Text className={`text-base text-white break-words whitespace-normal ${item.id === selectedId && 'pr-2'}`}>{item.label}</Text>

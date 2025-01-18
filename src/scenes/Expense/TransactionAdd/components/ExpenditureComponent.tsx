@@ -3,6 +3,7 @@ import React from 'react'
 import useArray from '../../../../hooks/useArray'
 import { TransactionCategory } from '../../../../types/Transaction';
 import { BASE64_IMAGES } from '../../../../storages/Base64Images';
+import { CATEGORY_TYPE } from '../../../../constants/Constant';
 
 interface ExpenditureComponentProps {
   onItemPress: (item: TransactionCategory) => void;
@@ -14,20 +15,20 @@ const ExpenditureComponent = ({ onItemPress, dataDefault }: ExpenditureComponent
   const [idSelected, setIdSelected] = React.useState<string | number>(0)
 
   const expenditures = useArray<TransactionCategory>([
-    new TransactionCategory({ category_id: 2, category_name: 'Thực phẩm', category_source: BASE64_IMAGES.food }),
-    new TransactionCategory({ category_id: 3, category_name: 'Chế độ ăn', category_source: BASE64_IMAGES.eating }),
-    new TransactionCategory({ category_id: 4, category_name: 'Di chuyển', category_source: BASE64_IMAGES.moving }),
-    new TransactionCategory({ category_id: 5, category_name: 'Thời trang', category_source: BASE64_IMAGES.fashion }),
-    new TransactionCategory({ category_id: 6, category_name: 'Chế độ uống', category_source: BASE64_IMAGES.drink }),
-    new TransactionCategory({ category_id: 7, category_name: 'Thú cưng', category_source: BASE64_IMAGES.pet }),
-    new TransactionCategory({ category_id: 8, category_name: 'Giáo dục', category_source: BASE64_IMAGES.education }),
-    new TransactionCategory({ category_id: 9, category_name: 'Sức khỏe', category_source: BASE64_IMAGES.health }),
-    new TransactionCategory({ category_id: 10, category_name: 'Du lịch', category_source: BASE64_IMAGES.travel }),
-    new TransactionCategory({ category_id: 11, category_name: 'Giải trí', category_source: BASE64_IMAGES.entertainment }),
-    new TransactionCategory({ category_id: 12, category_name: 'Hóa đơn nước', category_source: BASE64_IMAGES.water_bill }),
-    new TransactionCategory({ category_id: 13, category_name: 'Hóa đơn điện', category_source: BASE64_IMAGES.electricity_bill }),
-    new TransactionCategory({ category_id: 14, category_name: 'Hóa đơn internet', category_source: BASE64_IMAGES.internet_bill }),
-    new TransactionCategory({ category_id: 15, category_name: 'Quà tặng', category_source: BASE64_IMAGES.gift })
+    new TransactionCategory({ category_id: CATEGORY_TYPE.EXPENSE.FOOD, category_name: 'Thực phẩm', category_source: BASE64_IMAGES.food }),
+    new TransactionCategory({ category_id: CATEGORY_TYPE.EXPENSE.EATING, category_name: 'Chế độ ăn', category_source: BASE64_IMAGES.eating }),
+    new TransactionCategory({ category_id: CATEGORY_TYPE.EXPENSE.MOVING, category_name: 'Di chuyển', category_source: BASE64_IMAGES.moving }),
+    new TransactionCategory({ category_id: CATEGORY_TYPE.EXPENSE.FASHION, category_name: 'Thời trang', category_source: BASE64_IMAGES.fashion }),
+    new TransactionCategory({ category_id: CATEGORY_TYPE.EXPENSE.DRINK, category_name: 'Chế độ uống', category_source: BASE64_IMAGES.drink }),
+    new TransactionCategory({ category_id: CATEGORY_TYPE.EXPENSE.PET, category_name: 'Thú cưng', category_source: BASE64_IMAGES.pet }),
+    new TransactionCategory({ category_id: CATEGORY_TYPE.EXPENSE.EDUCATION, category_name: 'Giáo dục', category_source: BASE64_IMAGES.education }),
+    new TransactionCategory({ category_id: CATEGORY_TYPE.EXPENSE.HEALTH, category_name: 'Sức khỏe', category_source: BASE64_IMAGES.health }),
+    new TransactionCategory({ category_id: CATEGORY_TYPE.EXPENSE.TRAVEL, category_name: 'Du lịch', category_source: BASE64_IMAGES.travel }),
+    new TransactionCategory({ category_id: CATEGORY_TYPE.EXPENSE.ENTERTAINMENT, category_name: 'Giải trí', category_source: BASE64_IMAGES.entertainment }),
+    new TransactionCategory({ category_id: CATEGORY_TYPE.EXPENSE.WATER_BILL, category_name: 'Hóa đơn nước', category_source: BASE64_IMAGES.water_bill }),
+    new TransactionCategory({ category_id: CATEGORY_TYPE.EXPENSE.ELECTRICITY_BILL, category_name: 'Hóa đơn điện', category_source: BASE64_IMAGES.electricity_bill }),
+    new TransactionCategory({ category_id: CATEGORY_TYPE.EXPENSE.INTERNET_BILL, category_name: 'Hóa đơn internet', category_source: BASE64_IMAGES.internet_bill }),
+    new TransactionCategory({ category_id: CATEGORY_TYPE.EXPENSE.GIFT, category_name: 'Quà tặng', category_source: BASE64_IMAGES.gift })
   ])
 
   React.useEffect(() => {
@@ -36,15 +37,15 @@ const ExpenditureComponent = ({ onItemPress, dataDefault }: ExpenditureComponent
   }, [])
 
   React.useEffect(() => {
-    const addElement = expenditures.array.findIndex((item) => item.category_id === 1)
+    const addElement = expenditures.array.findIndex((item) => item.category_id === CATEGORY_TYPE.EXPENSE.NONE)
     if (addElement !== -1) { expenditures.removeAt(addElement) }
-    expenditures.push(new TransactionCategory({ category_id: 1, category_name: '', category_source: require('../../../../assets/icons/plus-blue-2.png') }))
+    expenditures.push(new TransactionCategory({ category_id: CATEGORY_TYPE.EXPENSE.NONE, category_name: '', category_source: require('../../../../assets/icons/plus-blue-2.png') }))
   }, [])
 
   const handleSelected = (selected: TransactionCategory) => {
-    const condition = selected.category_id === idSelected || selected.category_id === 1 ? 0 : selected.category_id
+    const condition = selected.category_id === idSelected || selected.category_id === CATEGORY_TYPE.EXPENSE.NONE ? 0 : selected.category_id
     setIdSelected(condition)
-    if (selected.category_id !== 1) {
+    if (selected.category_id !== CATEGORY_TYPE.EXPENSE.NONE) {
       onItemPress(selected)
     }
   }

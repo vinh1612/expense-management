@@ -4,7 +4,7 @@ import {
   ImageSourcePropType, TouchableOpacity
 } from 'react-native'
 import React from 'react'
-import { formatDate, parseDateString } from '../../../utils/TimeUtil'
+import { formatDate } from '../../../utils/TimeUtil'
 import { formatMoney } from '../../../utils/NumberUtils';
 import useArray from '../../../hooks/useArray';
 import { Transaction, TransactionByMonth } from '../../../types/Transaction';
@@ -18,6 +18,7 @@ import { getTransactionSourceText } from '../../../utils/StringUtils';
 import ModalTransactionUpdate from './components/ModalTransactionUpdate';
 import ModalTransactionDelete from './components/ModalTransactionDelete';
 import { showToast } from '../../../utils/ToastUtils';
+import { groupDataByTime } from '../../../utils/DataUtils';
 
 const TransactionScreen = () => {
 
@@ -30,43 +31,15 @@ const TransactionScreen = () => {
   const [currentYear, setCurrentYear] = React.useState(new Date().getFullYear());
   const isFocused = useIsFocused();
 
-  const groupDataByTime = (data: Transaction[], month: number, year: number): TransactionByMonth[] => {
-    return data.reduce((acc: TransactionByMonth[], item) => {
-      const transactionDate = parseDateString(item.created_at);
-      if (transactionDate.getMonth() === month && transactionDate.getFullYear() === year) {
-        const existingGroup = acc.find((group: TransactionByMonth) => group.date_time === item.created_at);
-        if (existingGroup) {
-          existingGroup.data.push(item);
-        } else {
-          acc.push({
-            date_time: item.created_at,
-            data: [item],
-          });
-        }
-      }
-      return acc;
-    }, []).sort((a: TransactionByMonth, b: TransactionByMonth) => {
-      return parseDateString(b.date_time).getTime() - parseDateString(a.date_time).getTime();
-    });
-  };
-
   const transactions = useArray<Transaction>(TransactionCache.getInstance.getTransactionCache())
   const transactionsSection = useArray<TransactionByMonth>(
-    groupDataByTime(
-      TransactionCache.getInstance.getTransactionCache(),
-      currentMonth,
-      currentYear
-    )
+    groupDataByTime({ data: TransactionCache.getInstance.getTransactionCache(), month: currentMonth, year: currentYear })
   )
 
   const getDataTransaction = () => {
     transactions.set(TransactionCache.getInstance.getTransactionCache())
     transactionsSection.set(
-      groupDataByTime(
-        TransactionCache.getInstance.getTransactionCache(),
-        currentMonth,
-        currentYear
-      )
+      groupDataByTime({ data: TransactionCache.getInstance.getTransactionCache(), month: currentMonth, year: currentYear })
     )
   }
 
@@ -79,7 +52,7 @@ const TransactionScreen = () => {
   const handleMonthChange = (newMonth: number, newYear: number) => {
     setCurrentMonth(newMonth)
     setCurrentYear(newYear);
-    transactionsSection.set(groupDataByTime(transactions.array, newMonth, newYear));
+    transactionsSection.set(groupDataByTime({ data: transactions.array, month: newMonth, year: newYear }));
   };
 
   const handDeleteTransaction = (transaction_id: number) => {

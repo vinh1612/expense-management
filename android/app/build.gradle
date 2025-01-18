@@ -2,12 +2,6 @@ apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
 
-// Configuration to bundle assets in debug and release builds
-project.ext.react = [
-    bundleInDebug: true,   // Bundles JS and assets in debug builds
-    bundleInRelease: true  // Bundles JS and assets in release builds
-]
-
 /**
  * This is the configuration block to customize your React Native Android app.
  * By default you don't need to apply any configuration, just uncomment the lines you need.
@@ -109,8 +103,6 @@ android {
             signingConfig signingConfigs.debug
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
-            // Disable resource shrinking if assets are not bundled correctly
-            shrinkResources false
         }
     }
 }

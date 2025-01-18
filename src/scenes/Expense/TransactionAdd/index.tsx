@@ -5,11 +5,10 @@ import {
 } from 'react-native'
 import React from 'react'
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import { getTodayDate } from '../../../utils/TimeUtil';
+import { convertDateFormatToString, getTodayDate } from '../../../utils/TimeUtil';
 import { TransactionCategory, Transaction } from '../../../types/Transaction';
 import { TransactionCache } from '../../../storages/Storages';
 import { formatMoney, removeFormatMoney } from '../../../utils/NumberUtils';
-import dayjs from 'dayjs';
 import AppScreenEnum from '../../../navigation/enums/AppScreenEnum';
 import ModalTransactionType from './components/ModalTransactionType';
 import ButtonComponent from '../../../components/ButtonComponent';
@@ -104,7 +103,7 @@ const TransactionAddScreen = ({ navigation }: any) => {
 
   const handleChooseTime = (dateTime: Date) => {
     setTransactionDate(dateTime)
-    setTransactionTime(dayjs(dateTime).format('DD/MM/YYYY'))
+    setTransactionTime(convertDateFormatToString({ date: dateTime, format: 'DD/MM/YYYY' }))
     setShowDatePicker(false)
   }
 
@@ -149,8 +148,8 @@ const TransactionAddScreen = ({ navigation }: any) => {
     <SafeAreaView className='bg-gray-900'>
       <View className='h-full'>
         <ScrollView showsVerticalScrollIndicator={false}>
-          <View className='flex px-4 py-10 gap-y-7'>
-            <Text className='text-xl font-bold text-center text-white'>Ghi chép giao dịch</Text>
+          <View className='flex px-4 py-6 space-y-6'>
+            <Text className='text-2xl font-bold text-center text-white'>Ghi chép giao dịch</Text>
 
             {renderViewInputLabel({
               contentLabel: 'Số tiền',

@@ -3,6 +3,7 @@ import React from 'react'
 import useArray from '../../../../hooks/useArray'
 import { TransactionCategory } from '../../../../types/Transaction'
 import { BASE64_IMAGES } from '../../../../storages/Base64Images';
+import { CATEGORY_TYPE } from '../../../../constants/Constant';
 
 interface IncomeComponentProps {
   onItemPress: (item: TransactionCategory) => void;
@@ -14,10 +15,10 @@ const IncomeComponent = ({ onItemPress, dataDefault }: IncomeComponentProps) => 
   const [idSelected, setIdSelected] = React.useState<string | number>(0)
 
   const incomes = useArray<TransactionCategory>([
-    new TransactionCategory({ category_id: 2, is_income: true, category_name: 'Tiền lương', category_source: BASE64_IMAGES.salary }),
-    new TransactionCategory({ category_id: 3, is_income: true, category_name: 'Tiền thưởng', category_source: BASE64_IMAGES.bonus }),
-    new TransactionCategory({ category_id: 4, is_income: true, category_name: 'Tiền đầu tư', category_source: BASE64_IMAGES.invest }),
-    new TransactionCategory({ category_id: 5, is_income: true, category_name: 'Tiền khác', category_source: BASE64_IMAGES.other_money }),
+    new TransactionCategory({ category_id: CATEGORY_TYPE.INCOME.SALARY, is_income: true, category_name: 'Tiền lương', category_source: BASE64_IMAGES.salary }),
+    new TransactionCategory({ category_id: CATEGORY_TYPE.INCOME.BONUS, is_income: true, category_name: 'Tiền thưởng', category_source: BASE64_IMAGES.bonus }),
+    new TransactionCategory({ category_id: CATEGORY_TYPE.INCOME.INVEST, is_income: true, category_name: 'Tiền đầu tư', category_source: BASE64_IMAGES.invest }),
+    new TransactionCategory({ category_id: CATEGORY_TYPE.INCOME.OTHER_MONEY, is_income: true, category_name: 'Tiền khác', category_source: BASE64_IMAGES.other_money }),
   ])
 
   React.useEffect(() => {
@@ -26,15 +27,15 @@ const IncomeComponent = ({ onItemPress, dataDefault }: IncomeComponentProps) => 
   }, [])
 
   React.useEffect(() => {
-    const addElement = incomes.array.findIndex((item) => item.category_id === 1)
+    const addElement = incomes.array.findIndex((item) => item.category_id === CATEGORY_TYPE.INCOME.NONE)
     if (addElement !== -1) { incomes.removeAt(addElement) }
-    incomes.push(new TransactionCategory({ category_id: 1, category_name: '', category_source: require('../../../../assets/icons/plus-blue-2.png') }))
+    incomes.push(new TransactionCategory({ category_id: CATEGORY_TYPE.INCOME.NONE, category_name: '', category_source: require('../../../../assets/icons/plus-blue-2.png') }))
   }, [])
 
   const handleSelected = (selected: TransactionCategory) => {
-    const condition = selected.category_id === idSelected || selected.category_id === 1 ? 0 : selected.category_id
+    const condition = selected.category_id === idSelected || selected.category_id === CATEGORY_TYPE.INCOME.NONE ? 0 : selected.category_id
     setIdSelected(condition)
-    if (selected.category_id !== 1) {
+    if (selected.category_id !== CATEGORY_TYPE.INCOME.NONE) {
       onItemPress(selected)
     }
   }
