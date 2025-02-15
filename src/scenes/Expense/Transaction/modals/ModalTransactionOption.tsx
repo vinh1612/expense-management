@@ -1,5 +1,6 @@
 import { Modal, Text, TouchableOpacity, View } from 'react-native'
 import React from 'react'
+import { MENU_TITLE } from '../../../../constants/String';
 
 interface ModalTransactionOptionProps {
     modalVisible: boolean;
@@ -25,13 +26,13 @@ const ModalTransactionOption = ({ modalVisible, setModalVisible, actionChosen }:
                             <TouchableOpacity onPress={() => {
                                 actionChosen('edit')
                             }}>
-                                <Text className='p-2 text-xl text-white'>Chỉnh sửa giao dịch</Text>
+                                <Text className='p-2 text-xl text-white'>{MENU_TITLE.TRANSACTION_UPDATE}</Text>
                             </TouchableOpacity>
                             <View className='w-full bg-gray-700 h-[1px]' />
                             <TouchableOpacity onPress={() => {
                                 actionChosen('delete')
                             }}>
-                                <Text className='p-2 text-xl text-white'>Xóa giao dịch</Text>
+                                <Text className='p-2 text-xl text-white'>{MENU_TITLE.TRANSACTION_DELETE}</Text>
                             </TouchableOpacity>
                         </View>
                     </View>

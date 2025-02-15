@@ -1,8 +1,8 @@
 import React from "react";
 import { View, Text, PanResponder, TouchableOpacity } from "react-native";
-import { RGBAColorStyle } from "../types/CalendarStyle";
+import { RGBAColorStyle } from "../models/CalendarStyle";
 import CustomDropdown from "./CustomDropdown";
-import { CALENDAR_STYLE } from "../constants/Constant";
+import { CALENDAR_STYLE } from "../constants/Status";
 
 const CustomSlider = ({
     min, max, step, value, title,

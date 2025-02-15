@@ -1,42 +1,75 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Modal, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, Modal, ScrollView, FlatList } from 'react-native';
 import { addMonths, subMonths, startOfWeek, endOfWeek, isSameDay, getWeek } from 'date-fns';
 import ArrowIcon from '../assets/svgIcons/ArrowIcon';
 import PencilIcon from '../assets/svgIcons/PencilIcon';
 import ColorPickerCustom from './ColorPickerCustom';
 import { CalendarStyleCache } from '../storages/Storages';
-import { CalendarStyle } from '../types';
-import { RGBAColorStyle } from '../types/CalendarStyle';
+import { CalendarStyle } from '../models';
+import { RGBAColorStyle } from '../models/CalendarStyle';
 import { showToast } from '../utils/ToastUtils';
-import { CALENDAR_STYLE } from '../constants/Constant';
+import { CALENDAR_STYLE } from '../constants/Status';
+import { getDaysInMonth, getFirstWeekdayOfMonth, getLastWeekdayOfMonth } from '../utils/DataUtils';
+import { ACTION_CONTENT, TOAST_MESSAGE } from '../constants/String';
 
-interface CustomDateTimePickerProps {
+interface CustomDateTimePickerBaseProps {
     isShow: boolean;
     onClose: () => void;
-    onConfirm: (date: { firstDay: Date; lastDay: Date } | Date) => void;
     type?: 'day' | 'weekday';
+    initialDate?: Date
 }
 
+interface DayPickerProps extends CustomDateTimePickerBaseProps {
+    type?: 'day';
+    onConfirm: (date: Date) => void;
+}
+
+interface WeekPickerProps extends CustomDateTimePickerBaseProps {
+    type: 'weekday';
+    onConfirm: (date: { dateSelect: Date; firstDay: Date; lastDay: Date }) => void;
+}
+
+type CustomDateTimePickerProps = DayPickerProps | WeekPickerProps;
+
 const CustomDateTimePicker: React.FC<CustomDateTimePickerProps> = ({
-    isShow, type = 'day', onClose, onConfirm
+    isShow, type = 'day', initialDate,
+    onClose, onConfirm
 }) => {
 
     const [date, setDate] = React.useState(new Date());
-    const [week, setWeek] = React.useState<{ firstDay: Date; lastDay: Date }>({
+    const [weekOfYear, setWeekOfYear] = React.useState(getWeek(new Date()));
+    const [week, setWeek] = React.useState<{ dateSelect: Date; firstDay: Date; lastDay: Date }>({
+        dateSelect: new Date(),
         firstDay: startOfWeek(new Date(), { weekStartsOn: 1 }),
         lastDay: endOfWeek(new Date(), { weekStartsOn: 1 }),
     });
     const weekDays = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
     const [showEditColor, setShowEditColor] = React.useState(false);
     const colorStyle = CalendarStyleCache.getInstance.getCalendarStyleCache()
-    const [backgroundColorReview, setBackgroundColorReview] = React.useState<RGBAColorStyle>(colorStyle.background_color ?? new RGBAColorStyle()); // RGBA Color
-    const [textColorReview, setTextColorReview] = React.useState<RGBAColorStyle>(colorStyle.text_color ?? new RGBAColorStyle()); // RGBA Color
-    const [todayDateColorReview, setTodayDateColorReview] = React.useState<RGBAColorStyle>(colorStyle.item_to_day_color ?? new RGBAColorStyle()); // RGBA Color
+    const [backgroundColorReview, setBackgroundColorReview] = React.useState<RGBAColorStyle>(new RGBAColorStyle()); // RGBA Color
+    const [textColorReview, setTextColorReview] = React.useState<RGBAColorStyle>(new RGBAColorStyle()); // RGBA Color
+    const [todayDateColorReview, setTodayDateColorReview] = React.useState<RGBAColorStyle>(new RGBAColorStyle()); // RGBA Color
     const backgroundHeaderColor = `rgba(${backgroundColorReview.red}, ${backgroundColorReview.green}, ${backgroundColorReview.blue}, ${backgroundColorReview.opacity})`
     const textColor = `rgba(${textColorReview.red}, ${textColorReview.green}, ${textColorReview.blue}, ${textColorReview.opacity})`
     const dateTodayColor = `rgba(${todayDateColorReview.red}, ${todayDateColorReview.green}, ${todayDateColorReview.blue}, ${todayDateColorReview.opacity})`
     const [calendarTypeStyle, setCalendarTypeStyle] = React.useState(CALENDAR_STYLE.THEME);
-    const [initialColor, setInitialColor] = React.useState(colorStyle.background_color);
+    const [initialColor, setInitialColor] = React.useState(colorStyle.backgroundColor);
+
+    React.useEffect(() => {
+        if (!isShow) { return; }
+        // Initial Date
+        setDate(initialDate ?? new Date());
+        setWeekOfYear(getWeek(initialDate ?? new Date()));
+        setWeek({
+            dateSelect: initialDate ?? new Date(),
+            firstDay: startOfWeek(initialDate ?? new Date(), { weekStartsOn: 1 }),
+            lastDay: endOfWeek(initialDate ?? new Date(), { weekStartsOn: 1 }),
+        });
+        // Initial Color
+        setBackgroundColorReview(colorStyle.backgroundColor ?? new RGBAColorStyle());
+        setTextColorReview(colorStyle.textColor ?? new RGBAColorStyle());
+        setTodayDateColorReview(colorStyle.itemToDayColor ?? new RGBAColorStyle());
+    }, [isShow]);
 
     const convertDate = (date: Date): string => {
         return `${String(date.getDate()).padStart(2, "0")}/${String(date.getMonth() + 1).padStart(2, "0")}/${date.getFullYear()}`;
@@ -47,14 +80,20 @@ const CustomDateTimePicker: React.FC<CustomDateTimePickerProps> = ({
     };
 
     const handleConfirmDate = () => {
-        type === 'weekday' ? onConfirm(week) : onConfirm(date);
+        if (type === 'weekday') {
+            (onConfirm as (date: { dateSelect: Date; firstDay: Date; lastDay: Date }) => void)(week);
+        } else {
+            (onConfirm as (date: Date) => void)(date);
+        }
         onClose();
     };
 
     const handleSelectCurrentDate = () => {
         setDate(new Date());
+        setWeekOfYear(getWeek(new Date()))
         if (type === 'weekday') {
             setWeek({
+                dateSelect: date,
                 firstDay: startOfWeek(new Date(), { weekStartsOn: 1 }),
                 lastDay: endOfWeek(new Date(), { weekStartsOn: 1 }),
             })
@@ -74,20 +113,20 @@ const CustomDateTimePicker: React.FC<CustomDateTimePickerProps> = ({
     const handleSaveColor = () => {
         const newStyle: CalendarStyle = {
             ...colorStyle,
-            background_color: backgroundColorReview,
-            text_color: textColorReview,
-            item_to_day_color: todayDateColorReview,
+            backgroundColor: backgroundColorReview,
+            textColor: textColorReview,
+            itemToDayColor: todayDateColorReview,
         }
         CalendarStyleCache.getInstance.saveCalendarStyleCache(newStyle)
         setShowEditColor(false);
-        showToast('Lưu màu sắc cho lịch thành công');
+        showToast(TOAST_MESSAGE.SUCCESS.SAVE_CUSTOMIZE_CALENDAR);
     };
 
     const handleResetColor = () => {
-        setBackgroundColorReview(colorStyle.background_color);
-        setTextColorReview(colorStyle.text_color);
-        setTodayDateColorReview(colorStyle.item_to_day_color);
-        setInitialColor(colorStyle.background_color)
+        setBackgroundColorReview(colorStyle.backgroundColor);
+        setTextColorReview(colorStyle.textColor);
+        setTodayDateColorReview(colorStyle.itemToDayColor);
+        setInitialColor(colorStyle.backgroundColor)
         setCalendarTypeStyle(CALENDAR_STYLE.THEME)
         setShowEditColor(false);
     }
@@ -105,81 +144,72 @@ const CustomDateTimePicker: React.FC<CustomDateTimePickerProps> = ({
             newDate = new Date(date.getFullYear(), date.getMonth(), day);
         }
         setDate(newDate); // Update the state to the new date
-        const firstDay = startOfWeek(newDate, { weekStartsOn: 1 });
-        const lastDay = endOfWeek(newDate, { weekStartsOn: 1 });
-        setWeek({ firstDay, lastDay }); // Update the selected week
+        setWeekOfYear(getWeek(newDate)); // Update the week of year
+        setWeek({
+            dateSelect: newDate,
+            firstDay: startOfWeek(newDate, { weekStartsOn: 1 }),
+            lastDay: endOfWeek(newDate, { weekStartsOn: 1 })
+        }); // Update the selected week
     };
-
-    const daysInMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
 
     const renderDays = () => {
         const daysArray = [];
-        // Determine the number of days to display from the previous month
         const prevMonthDate = subMonths(date, 1);
-        const totalDaysInPrevMonth = new Date(
-            prevMonthDate.getFullYear(),
-            prevMonthDate.getMonth() + 1,
-            0
-        ).getDate();
-        const prevMonth = new Date(date.getFullYear(), date.getMonth(), 1).getDay();
-        const firstWeekday = prevMonth === 0 ? 6 : prevMonth - 1
+        const daysInMonth = getDaysInMonth(date.getMonth(), date.getFullYear());
+        const firstWeekday = getFirstWeekdayOfMonth(date.getMonth(), date.getFullYear());
+        const lastWeekday = getLastWeekdayOfMonth(date.getMonth(), date.getFullYear());
+        const totalInFirstWeekday = firstWeekday === 0 ? 6 : firstWeekday - 1;
+        const totalInLastWeekday = lastWeekday === 0 ? 0 : 7 - lastWeekday;
 
-        // Add days from the previous month
-        for (let day = totalDaysInPrevMonth - firstWeekday + 1; day <= totalDaysInPrevMonth; day++) {
-            const currentDate = new Date(prevMonthDate.getFullYear(), prevMonthDate.getMonth(), day);
-            const isSelected = type === 'weekday' && currentDate >= week.firstDay && currentDate <= week.lastDay;
-            daysArray.push(
-                <TouchableOpacity
-                    key={`prev-${day}`}
-                    onPress={() => handleDayClick(-1, day)}
-                    className={`flex justify-center items-center w-8 h-8 m-1 rounded-full`}
-                    {...(isSelected && { style: { backgroundColor: backgroundHeaderColor } })}
-                >
-                    <Text className="text-sm text-gray-400">{day}</Text>
-                </TouchableOpacity>
-            );
-        }
+        const renderDay = (day: number, monthOffset: number | null, isGrayedOut = false) => {
+            const monthDate = monthOffset === -1 ? prevMonthDate :
+                monthOffset === 1 ? new Date(date.getFullYear(), date.getMonth() + 1) : date;
+            const currentDate = new Date(monthDate.getFullYear(), monthDate.getMonth(), day);
+            const isSelected = type === 'day' ?
+                (monthOffset === null && date.getDate() === day) :
+                (currentDate >= week.firstDay && currentDate <= week.lastDay);
+            const isToday = monthOffset === null && isSameDay(currentDate, new Date());
 
-        for (let day = 1; day <= daysInMonth; day++) {
-            const currentDate = new Date(date.getFullYear(), date.getMonth(), day);
-            const isSelected = type === 'day' ? date.getDate() === day : currentDate >= week.firstDay && currentDate <= week.lastDay;
-            const isToday = isSameDay(currentDate, new Date());
-            daysArray.push(
+            return (
                 <TouchableOpacity
-                    key={`current-${day}`}
-                    onPress={() => handleDayClick(null, day)}
-                    className={`flex justify-center items-center w-8 h-8 m-1 rounded-full`}
-                    {...(isSelected && { style: { backgroundColor: backgroundHeaderColor } })}
+                    key={`${monthOffset}-${day}`}
+                    onPress={() => handleDayClick(monthOffset, day)}
+                    className="items-center flex-1"
                 >
-                    <Text
-                        className={`text-sm ${isToday && 'font-bold'}`}
-                        style={{ color: isToday ? dateTodayColor : textColor }}
+                    <View
+                        {...(isSelected && { style: { backgroundColor: backgroundHeaderColor } })}
+                        className='flex items-center justify-center w-8 h-8 rounded-full'
                     >
-                        {day}
-                    </Text>
-                    {isToday && (
-                        <View className='w-1 h-1 rounded-full' style={{ backgroundColor: dateTodayColor }} ></View>
-                    )}
+                        <Text
+                            className={`text-sm ${isToday && 'font-bold'}`}
+                            style={{ color: isToday ? dateTodayColor : isGrayedOut ? 'rgb(156 163 175)' : textColor }}
+                        >
+                            {day}
+                        </Text>
+                        {isToday && (
+                            <View className='w-1 h-1 rounded-full' style={{ backgroundColor: dateTodayColor }} />
+                        )}
+                    </View>
                 </TouchableOpacity>
             );
+        };
+
+        // Previous month days
+        for (let i = totalInFirstWeekday; i > 0; i--) {
+            const day = new Date(prevMonthDate.getFullYear(), prevMonthDate.getMonth() + 1, 0).getDate() - i + 1;
+            daysArray.push(renderDay(day, -1, true));
         }
 
-        // Add days for the next month to complete the grid
-        const nextMonthDays = (daysArray.length > 35 ? 42 : 35) - daysArray.length; // Ensure 5 or 6 rows of 7 days
-        for (let day = 1; day <= nextMonthDays; day++) {
-            const currentDate = new Date(date.getFullYear(), date.getMonth() + 1, day);
-            const isSelected = type === 'weekday' && currentDate >= week.firstDay && currentDate <= week.lastDay;
-            daysArray.push(
-                <TouchableOpacity
-                    key={`next-${day}`}
-                    onPress={() => handleDayClick(1, day)}
-                    className={`flex justify-center items-center w-8 h-8 m-1 rounded-full`}
-                    {...(isSelected && { style: { backgroundColor: backgroundHeaderColor } })}
-                >
-                    <Text className="text-sm text-gray-400">{day}</Text>
-                </TouchableOpacity>
-            );
+        // Current month days
+        for (let day = 1; day <= daysInMonth; day++) {
+            daysArray.push(renderDay(day, null));
         }
+
+        // Next month days
+        for (let day = 1; day <= totalInLastWeekday; day++) {
+            daysArray.push(renderDay(day, 1, true));
+        }
+
         return daysArray;
     };
 
@@ -197,7 +227,7 @@ const CustomDateTimePicker: React.FC<CustomDateTimePickerProps> = ({
                                     convertDate(week.firstDay)} - {convertDate(week.lastDay)}
                                 </Text>
                                 <Text className='text-4xl font-bold' style={{ color: textColor }}>
-                                    Tuần {getWeek(date)}
+                                    Tuần {weekOfYear}
                                 </Text>
                             </>
                         ) : (
@@ -226,11 +256,11 @@ const CustomDateTimePicker: React.FC<CustomDateTimePickerProps> = ({
                                 onChangeType={(type: number) => {
                                     setCalendarTypeStyle(type)
                                     if (type === CALENDAR_STYLE.THEME) {
-                                        setInitialColor(colorStyle.background_color);
+                                        setInitialColor(colorStyle.backgroundColor);
                                     } else if (type === CALENDAR_STYLE.TEXT) {
-                                        setInitialColor(colorStyle.text_color);
+                                        setInitialColor(colorStyle.textColor);
                                     } else {
-                                        setInitialColor(colorStyle.item_to_day_color);
+                                        setInitialColor(colorStyle.itemToDayColor);
                                     }
                                 }}
                             />
@@ -256,24 +286,24 @@ const CustomDateTimePicker: React.FC<CustomDateTimePickerProps> = ({
                                 <ArrowIcon direction='right' color='white' />
                             </TouchableOpacity>
                         </View>
+                        <View>
+                            <View className="flex flex-row justify-between w-full mb-2">
+                                {weekDays.map((day) => (
+                                    <Text key={day} className="flex-1 py-1 text-sm text-center" style={{ color: textColor }}>
+                                        {day}
+                                    </Text>
+                                ))}
+                            </View>
 
-                        <View className="flex flex-row justify-between mb-2">
-                            {weekDays.map((day) => (
-                                <Text key={day} className="flex-1 py-1 text-sm text-center" style={{ color: textColor }}>
-                                    {day}
-                                </Text>
-                            ))}
+                            <FlatList
+                                data={renderDays()}
+                                numColumns={7}
+                                keyExtractor={(_, index) => index.toString()}
+                                renderItem={({ item }) => {
+                                    return item;
+                                }}
+                            />
                         </View>
-
-                        <ScrollView
-                            contentContainerStyle={{
-                                flexWrap: 'wrap',
-                                flexDirection: 'row',
-                                justifyContent: 'space-between'
-                            }}
-                        >
-                            {renderDays()}
-                        </ScrollView>
 
                         <View className='flex flex-row items-center justify-between mt-4'>
                             <TouchableOpacity
@@ -293,7 +323,7 @@ const CustomDateTimePicker: React.FC<CustomDateTimePickerProps> = ({
                                     className="p-2 rounded-md"
                                 >
                                     <Text className="text-base font-bold text-center" style={{ color: backgroundHeaderColor }} >
-                                        Đóng
+                                        {ACTION_CONTENT.CLOSE}
                                     </Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity
@@ -301,7 +331,7 @@ const CustomDateTimePicker: React.FC<CustomDateTimePickerProps> = ({
                                     className="p-2 rounded-md"
                                 >
                                     <Text className="text-base font-bold text-center" style={{ color: backgroundHeaderColor }} >
-                                        Chọn
+                                        {ACTION_CONTENT.CHOOSE}
                                     </Text>
                                 </TouchableOpacity>
                             </View>

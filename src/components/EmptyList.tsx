@@ -1,5 +1,6 @@
 import { View, Text, Image } from 'react-native'
 import React from 'react'
+import { TEXT_STRING } from '../constants/String'
 
 
 interface EmptyListProps {
@@ -14,7 +15,7 @@ const EmptyList = ({ message }: EmptyListProps) => {
         className='w-full h-52'
         resizeMode='contain'
       />
-      <Text className='text-lg font-bold text-center text-gray-400'>{message ?? 'Chưa có dữ liệu'}</Text>
+      <Text className='text-lg font-bold text-center text-gray-400'>{message ?? TEXT_STRING.NO_DATA}</Text>
     </View>
   )
 }

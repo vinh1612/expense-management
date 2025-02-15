@@ -1,9 +1,10 @@
 import { View, Modal, TouchableOpacity, FlatList, Text, Image } from "react-native";
-import ButtonComponent from "../../../../components/ButtonComponent";
+import ButtonComponent from "../../../../components/Button";
 import React from "react";
-import { TRANSACTION_SOURCE } from "../../../../constants/Constant";
+import { TRANSACTION_SOURCE } from "../../../../constants/Status";
 import MoMoIcon from "../../../../assets/svgIcons/MoMoIcon";
 import { BASE64_IMAGES } from "../../../../storages/Base64Images";
+import { ACTION_CONTENT, PAYMENT_METHOD, PLACEHOLDER_TITLE } from "../../../../constants/String";
 
 interface ModalTransactionSourceProps {
     sourceDefault: number
@@ -21,9 +22,9 @@ const ModalTransactionSource = ({ sourceDefault, modalVisible, setModalVisible }
     }, [modalVisible])
 
     const transactionSource = [
-        { id: TRANSACTION_SOURCE.CASH, image: <Image className="w-[60] h-[60]" source={{ uri: BASE64_IMAGES.salary }} />, title: 'Tiền Mặt' },
-        { id: TRANSACTION_SOURCE.BANK, image: <Image className="w-[60] h-[60]" source={{ uri: BASE64_IMAGES.logo_atm }} />, title: 'Tài Khoản Ngân Hàng' },
-        { id: TRANSACTION_SOURCE.MOMO, image: <MoMoIcon size={60} />, title: 'Ví MoMo' },
+        { id: TRANSACTION_SOURCE.CASH, image: <Image className="w-[60] h-[60]" source={{ uri: `data:image/png;base64,${BASE64_IMAGES.salary}` }} />, title: PAYMENT_METHOD.CASH },
+        { id: TRANSACTION_SOURCE.BANK, image: <Image className="w-[60] h-[60]" source={{ uri: `data:image/png;base64,${BASE64_IMAGES.logo_atm}` }} />, title: PAYMENT_METHOD.BANK },
+        { id: TRANSACTION_SOURCE.MOMO, image: <MoMoIcon size={60} />, title: PAYMENT_METHOD.MOMO },
     ]
 
     return (
@@ -34,7 +35,7 @@ const ModalTransactionSource = ({ sourceDefault, modalVisible, setModalVisible }
         >
             <View className='justify-center h-full px-4 bg-black/60'>
                 <View className='bg-gray-900 border border-gray-700 rounded-lg'>
-                    <Text className='py-2 text-xl font-bold text-center text-white'>Chọn nguồn tiền</Text>
+                    <Text className='py-2 text-xl font-bold text-center text-white'>{PLACEHOLDER_TITLE.MONEY_SOURCE}</Text>
                     <View className="px-2 py-8 bg-gray-800">
                         <FlatList
                             data={transactionSource}
@@ -61,12 +62,14 @@ const ModalTransactionSource = ({ sourceDefault, modalVisible, setModalVisible }
                     </View>
                     <View className='flex flex-row justify-center py-2 gap-x-4'>
                         <ButtonComponent
-                            title='HỦY'
+                            title={ACTION_CONTENT.CANCEL}
                             className='bg-red-500'
+                            classNameText='uppercase'
                             onPress={() => setModalVisible(false)}
                         />
                         <ButtonComponent
-                            title='CHỌN'
+                            title={ACTION_CONTENT.CHOOSE}
+                            classNameText="uppercase"
                             className="bg-[#0071BB]"
                             onPress={() => setModalVisible(false, idSelected)}
                         />

@@ -2,9 +2,10 @@ import { View, Text, SafeAreaView, Animated } from 'react-native'
 import React from 'react'
 import { formatMoney, randomIntFromInterval } from '../../../utils/NumberUtils';
 import { WalletCache } from '../../../storages/Storages';
-import { Wallet } from '../../../types';
+import { Wallet } from '../../../models';
 import { useIsFocused } from '@react-navigation/native';
 import FastImage from 'react-native-fast-image';
+import { MENU_TITLE, TEXT_STRING } from '../../../constants/String';
 
 const WalletScreen = () => {
 
@@ -28,8 +29,8 @@ const WalletScreen = () => {
   const setAnimatedProgress = (progress: Animated.Value, forItem: number) => {
     let percentage = 0
     if (forItem > 0) {
-      const total_amount = wallet.total_income + wallet.total_expenditure
-      percentage = forItem / total_amount * 100
+      const totalAmount = wallet.totalIncome + wallet.totalExpenditure
+      percentage = forItem / totalAmount * 100
     }
     Animated.timing(progress, {
       toValue: percentage, // Animate to 100%
@@ -40,18 +41,18 @@ const WalletScreen = () => {
 
   React.useEffect(() => {
     if (maxWidthIncome > 0) {
-      setAnimatedProgress(progressIncome, wallet.total_income)
+      setAnimatedProgress(progressIncome, wallet.totalIncome)
     }
   }, [maxWidthIncome, wallet]);
 
   React.useEffect(() => {
     if (maxWidthExpenditure > 0) {
-      setAnimatedProgress(progressExpenditure, wallet.total_expenditure)
+      setAnimatedProgress(progressExpenditure, wallet.totalExpenditure)
     }
   }, [maxWidthExpenditure, wallet]);
 
   React.useEffect(() => {
-    if (isFocused && WalletCache.getInstance.getWalletCache().total_amount !== wallet.total_amount) {
+    if (isFocused && WalletCache.getInstance.getWalletCache().totalAmount !== wallet.totalAmount) {
       setWallet(WalletCache.getInstance.getWalletCache())
     }
   }, [isFocused]);
@@ -66,21 +67,23 @@ const WalletScreen = () => {
 
   const renderViewProgress = ({ progressTitle, progressColor, progressWidth, amount, setMaxWidth }: ViewProgressProps) => {
     return (
-      <View className='flex space-y-1'>
-        <Text className='text-base font-extrabold text-white'>{progressTitle}</Text>
+      <View className='space-y-1'>
+        <View className='flex flex-row items-center justify-between gap-x-4'>
+          <Text className='text-lg font-bold text-white'>{progressTitle}</Text>
+          <Text className='flex-1 text-base font-bold text-right' style={{ color: progressColor }}>{amount} {TEXT_STRING.UNIT}</Text>
+        </View>
         <View
-          className='h-3 bg-white rounded-full'
+          className='h-4 bg-white rounded-full'
           onLayout={(event) => {
             const { width } = event.nativeEvent.layout;
             setMaxWidth(width);
           }}
         >
           <Animated.View
-            className='h-3 rounded-full'
+            className='h-4 rounded-full'
             style={{ backgroundColor: progressColor, width: progressWidth }}
           />
         </View>
-        <Text className='font-bold' style={{ color: progressColor }}>{amount} VND</Text>
       </View>
     )
   }
@@ -99,31 +102,31 @@ const WalletScreen = () => {
     <SafeAreaView className='bg-gray-900'>
       <View className='h-full px-2 py-4 space-y-4'>
         <View className='flex p-4 space-y-4 bg-gray-700 border border-gray-600 rounded-lg'>
-          <View className='flex flex-row items-center justify-between'>
-            <Text className='text-2xl font-extrabold text-white'>Tài khoản của tôi</Text>
-            <Text className='text-base font-bold text-white'>{formatMoney(wallet.total_amount)} VND</Text>
+          <View className='flex flex-row items-center justify-between gap-x-4'>
+            <Text className='text-2xl font-bold text-white capitalize'>{MENU_TITLE.MY_ACCOUNT}</Text>
+            <Text className='flex-1 text-lg font-bold text-right text-white'>{formatMoney(wallet.totalAmount)} {TEXT_STRING.UNIT}</Text>
           </View>
 
           {renderViewProgress({
-            progressTitle: 'Thu nhập',
+            progressTitle: TEXT_STRING.INCOME,
             progressColor: '#FC00A8',
             progressWidth: animatedWidthIncome,
-            amount: `+${formatMoney(wallet.total_income)}`,
+            amount: `+${formatMoney(wallet.totalIncome)}`,
             setMaxWidth: setMaxWidthIncome
           })}
 
           {renderViewProgress({
-            progressTitle: 'Chi tiêu',
+            progressTitle: TEXT_STRING.EXPENSE,
             progressColor: '#46BB1D',
             progressWidth: animatedWidthExpenditure,
-            amount: `-${formatMoney(wallet.total_expenditure)}`,
+            amount: `-${formatMoney(wallet.totalExpenditure)}`,
             setMaxWidth: setMaxWidthExpenditure
           })}
         </View>
-        <View className='flex justify-center flex-1 bg-gray-700 border border-gray-600 rounded-lg'>
+        <View className='flex items-center justify-center flex-1 bg-gray-700 border border-gray-600 rounded-lg'>
           <FastImage
             source={imageGIFsFunny[randomIntFromInterval(0, imageGIFsFunny.length - 1)]}
-            resizeMode={FastImage.resizeMode.center}
+            resizeMode={FastImage.resizeMode.contain}
             className='w-full h-full'
           />
         </View>

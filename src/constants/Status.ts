@@ -23,7 +23,7 @@ export enum CALENDAR_STYLE {
 }
 
 export enum CATEGORY_INCOME {
-    NONE = 1,
+    ADD_OTHER = 1,
     SALARY = 2,
     BONUS = 3,
     INVEST = 4,
@@ -31,21 +31,17 @@ export enum CATEGORY_INCOME {
 }
 
 export enum CATEGORY_EXPENSE {
-    NONE = 1,
+    ADD_OTHER = 1,
     FOOD = 2,
-    EATING = 3,
-    MOVING = 4,
-    FASHION = 5,
-    DRINK = 6,
-    PET = 7,
-    EDUCATION = 8,
-    HEALTH = 9,
-    TRAVEL = 10,
-    ENTERTAINMENT = 11,
-    WATER_BILL = 12,
-    ELECTRICITY_BILL = 13,
-    INTERNET_BILL = 14,
-    GIFT = 15
+    MOVING = 3,
+    FASHION = 4,
+    PET = 5,
+    EDUCATION = 6,
+    HEALTH = 7,
+    TRAVEL = 8,
+    ENTERTAINMENT = 9,
+    ELECTRICITY_BILL = 10,
+    GIFT = 11
 }
 
 export const CATEGORY_TYPE = {

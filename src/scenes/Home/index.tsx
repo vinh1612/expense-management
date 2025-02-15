@@ -1,6 +1,7 @@
 import { Image, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 import React from 'react';
 import AppScreenEnum from '../../navigation/enums/AppScreenEnum';
+import { MODULE_TITLE } from '../../constants/String';
 
 const HomeScreen = ({ navigation }: any) => {
 
@@ -13,7 +14,7 @@ const HomeScreen = ({ navigation }: any) => {
                 >
                     <View>
                         <Image source={require('../../assets/images/expense-banner.png')} className='w-full mb-2 h-36' resizeMode='center' />
-                        <Text className='font-bold text-center text-gray-700'>Chi tiêu</Text>
+                        <Text className='font-bold text-center text-gray-700 capitalize'>{MODULE_TITLE.FINANCIAL}</Text>
                     </View>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -21,8 +22,8 @@ const HomeScreen = ({ navigation }: any) => {
                     onPress={() => navigation.push(AppScreenEnum.WAREHOUSE_NAVIGATOR)}
                 >
                     <View>
-                        <Image source={require('../../assets/images/4.png')} className='w-full mb-2 h-36' resizeMode='center' />
-                        <Text className='font-bold text-center text-gray-700'>Kho hàng</Text>
+                        <Image source={require('../../assets/images/inventory-banner.png')} className='w-full mb-2 h-36' resizeMode='center' />
+                        <Text className='font-bold text-center text-gray-700 capitalize'>{MODULE_TITLE.WAREHOUSE}</Text>
                     </View>
                 </TouchableOpacity>
             </View>

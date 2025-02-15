@@ -1,5 +1,5 @@
 import { MMKV } from 'react-native-mmkv'
-import { Transaction, Wallet, CalendarStyle } from '../types/index';
+import { Transaction, Wallet, CalendarStyle } from '../models/index';
 
 export const storage = new MMKV()
 
@@ -50,7 +50,7 @@ export class TransactionCache {
   // Update a transaction in the array by ID (or some other identifier)
   updateTransactionWith(updatedTransaction: Transaction) {
     const transactions = this.getTransactionCache();
-    const index = transactions.findIndex(t => t.transaction_id === updatedTransaction.transaction_id); // Assuming each transaction has a unique 'id'
+    const index = transactions.findIndex(t => t.transactionId === updatedTransaction.transactionId); // Assuming each transaction has a unique 'id'
     if (index !== -1) {
       transactions[index] = updatedTransaction;
       this.saveTransactionCache(transactions);
@@ -60,7 +60,7 @@ export class TransactionCache {
   // Remove a transaction from the array by ID (or some other identifier)
   removeTransactionWith(transactionId: number) {
     let transactions = this.getTransactionCache();
-    transactions = transactions.filter(t => t.transaction_id !== transactionId); // Assuming each transaction has a unique 'id'
+    transactions = transactions.filter(t => t.transactionId !== transactionId); // Assuming each transaction has a unique 'id'
     this.saveTransactionCache(transactions);
   }
 }
@@ -86,31 +86,31 @@ export class WalletCache {
     try {
       const cachedTransaction = this.getTransactionCacheSafe();
 
-      const total_amount = cachedTransaction
+      const totalAmount = cachedTransaction
         .reduce((total, currentValue) => {
-          const amount = currentValue.transaction_type.is_income ? currentValue.transaction_amount : -currentValue.transaction_amount;
+          const amount = currentValue.transactionType.isIncome ? currentValue.transactionAmount : -currentValue.transactionAmount;
           return total + amount;
         }, 0);
 
-      const total_income = cachedTransaction
-        .filter((item) => item.transaction_type.is_income)
+      const totalIncome = cachedTransaction
+        .filter((item) => item.transactionType.isIncome)
         .reduce((total, currentValue) => {
-          return total + currentValue.transaction_amount;
+          return total + currentValue.transactionAmount;
         }, 0);
 
-      const total_expenditure = cachedTransaction
-        .filter((item) => !item.transaction_type.is_income)
+      const totalExpenditure = cachedTransaction
+        .filter((item) => !item.transactionType.isIncome)
         .reduce((total, currentValue) => {
-          return total + currentValue.transaction_amount;
+          return total + currentValue.transactionAmount;
         }, 0);
 
       const walletString = storage.getString(KEY_CACHE.WALLET);
 
       if (walletString) { // Kiểm tra cache đã được khởi tạo bên dưới hay chưa
         cached = JSON.parse(walletString) as Wallet;
-        cached.total_amount = total_amount
-        cached.total_income = total_income
-        cached.total_expenditure = total_expenditure
+        cached.totalAmount = totalAmount
+        cached.totalIncome = totalIncome
+        cached.totalExpenditure = totalExpenditure
       } else {
         cached = new Wallet();
       }

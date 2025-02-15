@@ -1,5 +1,6 @@
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { Image, Platform, Text, TouchableOpacity, View } from "react-native";
+import { MODULE_TITLE } from "../constants/String";
 
 function CustomExpenseTabBar({ state, descriptors, navigation }: Readonly<BottomTabBarProps>) {
 
@@ -35,7 +36,7 @@ function CustomExpenseTabBar({ state, descriptors, navigation }: Readonly<Bottom
           require('../assets/icons/setting.png'),
         ]
 
-        const textContent = ['Ví tiền', 'Giao dịch', '', 'Thống kê', 'Cài đặt']
+        const textContent = [MODULE_TITLE.WALLET, MODULE_TITLE.TRANSACTION, '', MODULE_TITLE.REPORT, MODULE_TITLE.SETTING]
 
         return (
           <TouchableOpacity
@@ -43,7 +44,6 @@ function CustomExpenseTabBar({ state, descriptors, navigation }: Readonly<Bottom
             accessibilityRole="button"
             accessibilityState={isFocused ? { selected: true } : {}}
             accessibilityLabel={options.tabBarAccessibilityLabel}
-            testID={options.tabBarTestID}
             onPress={onPress}
             className='items-center justify-center flex-1 gap-1'
           >

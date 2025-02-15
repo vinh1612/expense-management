@@ -1,22 +1,26 @@
 import {
   View, Text, SafeAreaView, ScrollView,
   TextInput, TouchableOpacity, InputModeOptions,
-  Image, TextStyle
+  Image, TextStyle,
 } from 'react-native'
 import React from 'react'
-import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { convertDateFormatToString, getTodayDate } from '../../../utils/TimeUtil';
-import { TransactionCategory, Transaction } from '../../../types/Transaction';
+import { TransactionCategory, Transaction } from '../../../models/Transaction';
 import { TransactionCache } from '../../../storages/Storages';
 import { formatMoney, removeFormatMoney } from '../../../utils/NumberUtils';
 import AppScreenEnum from '../../../navigation/enums/AppScreenEnum';
-import ModalTransactionType from './components/ModalTransactionType';
-import ButtonComponent from '../../../components/ButtonComponent';
+import ButtonComponent from '../../../components/Button';
 import { showToast } from '../../../utils/ToastUtils';
-import ModalTransactionSource from './components/ModalTransactionSource';
-import { TRANSACTION_SOURCE } from '../../../constants/Constant';
+import { CATEGORY_TYPE, TRANSACTION_SOURCE } from '../../../constants/Status';
 import ArrowIcon from '../../../assets/svgIcons/ArrowIcon';
 import { getTransactionSourceText } from '../../../utils/StringUtils';
+import CustomDateTimePicker from '../../../components/CustomDateTimePicker';
+import { convertImageAsArrayBuffer } from '../../../utils/ImageUtils';
+import { ACTION_CONTENT, TEXT_STRING, MENU_TITLE, PLACEHOLDER_TITLE, TOAST_MESSAGE } from '../../../constants/String';
+import ModalTransactionType from './modals/ModalTransactionType';
+import ModalTransactionSource from './modals/ModalTransactionSource';
+import ModalAddTransactionOther from './modals/ModalAddTransactionOther';
+import { BASE64_IMAGES } from '../../../storages/Base64Images';
 
 interface ViewInputLabel {
   contentLabel: string;
@@ -90,16 +94,18 @@ export function renderViewInputLabel({
 
 const TransactionAddScreen = ({ navigation }: any) => {
 
-  const [transactionType, setTransactionType] = React.useState(new TransactionCategory({ category_id: 0 }));
+  const [transactionType, setTransactionType] = React.useState(new TransactionCategory({ categoryId: 0 }));
   const [transactionSource, setTransactionSource] = React.useState(TRANSACTION_SOURCE.CASH);
   const [transactionAmount, setTransactionAmount] = React.useState(0);
   const [transactionTime, setTransactionTime] = React.useState(getTodayDate()); // For display input text
   const [transactionDate, setTransactionDate] = React.useState(new Date()); // For DateTimePicker selected value
   const [transactionNote, setTransactionNote] = React.useState('');
+  const [isIncomeTemp, setIsIncomeTemp] = React.useState(false);
 
   const [showDatePicker, setShowDatePicker] = React.useState(false);
   const [isShowModalType, setIsShowModalType] = React.useState(false);
   const [isShowModalSource, setIsShowModalSource] = React.useState(false);
+  const [isShowModalOther, setIsShowModalOther] = React.useState(false);
 
   const handleChooseTime = (dateTime: Date) => {
     setTransactionDate(dateTime)
@@ -109,14 +115,16 @@ const TransactionAddScreen = ({ navigation }: any) => {
 
   const handleSaveTransaction = () => {
     if (!checkValidate()) { return }
+    const newTransactionType = transactionType
+    newTransactionType.categorySource = convertImageAsArrayBuffer(transactionType.categorySource as string)
     const newTransaction = new Transaction({
-      transaction_type: transactionType,
-      transaction_amount: transactionAmount,
+      transactionType: newTransactionType,
+      transactionAmount: transactionAmount,
       source: transactionSource,
-      created_at: transactionTime,
-      transaction_note: transactionNote
+      createdAt: transactionTime,
+      transactionNote: transactionNote
     })
-    showToast(`Thêm mới giao dịch ${transactionType.is_income ? 'thu' : 'chi'} thành công!`);
+    showToast(transactionType.isIncome ? TOAST_MESSAGE.SUCCESS.ADD_TRANSACTION_INCOME : TOAST_MESSAGE.SUCCESS.ADD_TRANSACTION_EXPENSE);
     TransactionCache.getInstance.pushTransaction(newTransaction)
     handleClearData()
     navigation.navigate(AppScreenEnum.TRANSACTION_BOOK_NAVIGATOR)
@@ -124,18 +132,18 @@ const TransactionAddScreen = ({ navigation }: any) => {
 
   function checkValidate(): boolean {
     if (transactionAmount == 0) {
-      showToast('Vui lòng nhập số tiền giao dịch');
+      showToast(TOAST_MESSAGE.WARNING.MONEY);
       return false;
     }
-    if (transactionType.category_id == 0) {
-      showToast('Vui lòng chọn danh mục để phân loại');
+    if (transactionType.categoryId == 0) {
+      showToast(TOAST_MESSAGE.WARNING.CATEGORY);
       return false;
     }
     return true;
   }
 
   const handleClearData = () => {
-    setTransactionType(new TransactionCategory({ category_id: 0 }));
+    setTransactionType(new TransactionCategory({ categoryId: 0 }));
     setTransactionSource(TRANSACTION_SOURCE.CASH)
     setTransactionAmount(0)
     setTransactionTime(getTodayDate)
@@ -149,10 +157,10 @@ const TransactionAddScreen = ({ navigation }: any) => {
       <View className='h-full'>
         <ScrollView showsVerticalScrollIndicator={false}>
           <View className='flex px-4 py-6 space-y-6'>
-            <Text className='text-2xl font-bold text-center text-white'>Ghi chép giao dịch</Text>
+            <Text className='text-2xl font-bold text-center text-white capitalize'>{MENU_TITLE.TRANSACTION_ADD}</Text>
 
             {renderViewInputLabel({
-              contentLabel: 'Số tiền',
+              contentLabel: TEXT_STRING.AMOUNT,
               onChangeText: (value) => setTransactionAmount(removeFormatMoney(value)),
               value: formatMoney(transactionAmount),
               inputMode: 'numeric',
@@ -160,54 +168,58 @@ const TransactionAddScreen = ({ navigation }: any) => {
             })}
 
             {renderViewInputLabel({
-              contentLabel: 'Danh mục',
-              value: transactionType.category_name,
+              contentLabel: TEXT_STRING.CATEGORY,
+              value: transactionType.categoryName,
               onPressButton: () => setIsShowModalType(true),
               icon: <ArrowIcon direction='down' color='white' />,
-              placeholder: 'Chọn danh mục'
+              placeholder: PLACEHOLDER_TITLE.CATEGORY
             })}
 
             {renderViewInputLabel({
-              contentLabel: 'Ngày giao dịch',
+              contentLabel: TEXT_STRING.TRANSACTION_DATE,
               value: transactionTime,
               onPressButton: () => setShowDatePicker(true),
               icon: <Image source={require('../../../assets/icons/calendars.png')} />
             })}
 
             {renderViewInputLabel({
-              contentLabel: 'Nguồn tiền',
+              contentLabel: TEXT_STRING.MONEY_SOURCE,
               value: getTransactionSourceText(transactionSource),
               onPressButton: () => setIsShowModalSource(true),
               icon: <ArrowIcon direction='down' color='white' />
             })}
 
             {renderViewInputLabel({
-              contentLabel: 'Ghi chú',
+              contentLabel: TEXT_STRING.NOTE,
               onChangeText: setTransactionNote,
               value: transactionNote,
               isRequired: false,
               style: { maxHeight: 100 },
-              placeholder: 'Nhập mô tả giao dịch'
+              placeholder: PLACEHOLDER_TITLE.NOTE
             })}
 
             <View className='flex flex-row justify-center gap-x-4'>
-              <ButtonComponent title='HỦY' className='bg-red-500' onPress={handleClearData} />
-              <ButtonComponent title='LƯU' className='bg-[#0071BB]' onPress={handleSaveTransaction} />
+              <ButtonComponent title={ACTION_CONTENT.CANCEL} classNameText='uppercase' className='bg-red-500' onPress={handleClearData} />
+              <ButtonComponent title={ACTION_CONTENT.SAVE} classNameText='uppercase' className='bg-[#0071BB]' onPress={handleSaveTransaction} />
             </View>
           </View>
         </ScrollView>
       </View>
 
-      <DateTimePickerModal
-        isVisible={showDatePicker}
-        mode="date"
+      <CustomDateTimePicker
+        initialDate={transactionDate}
+        isShow={showDatePicker}
+        onClose={() => setShowDatePicker(false)}
         onConfirm={handleChooseTime}
-        onCancel={() => setShowDatePicker(false)}
-        date={transactionDate}
       />
 
       <ModalTransactionType
         modalVisible={isShowModalType}
+        selectedTransactionCategory={transactionType}
+        onAddPress={({ isIncome }) => {
+          setIsIncomeTemp(isIncome)
+          setIsShowModalOther(true)
+        }}
         setModalVisible={(visible, itemSelected) => {
           setIsShowModalType(visible)
           if (itemSelected) {
@@ -224,6 +236,21 @@ const TransactionAddScreen = ({ navigation }: any) => {
           if (sourceSelected !== undefined) {
             setTransactionSource(sourceSelected)
           }
+        }}
+      />
+
+      <ModalAddTransactionOther
+        modalVisible={isShowModalOther}
+        setModalVisible={(visible, categoryName) => {
+          setIsShowModalOther(visible)
+          if (!categoryName) { return; }
+          setTransactionType(new TransactionCategory({
+            categoryId: isIncomeTemp ? CATEGORY_TYPE.INCOME.ADD_OTHER : CATEGORY_TYPE.EXPENSE.ADD_OTHER,
+            categoryName: categoryName,
+            isIncome: isIncomeTemp,
+            categorySource: BASE64_IMAGES.other
+          }))
+          setIsShowModalType(false)
         }}
       />
 

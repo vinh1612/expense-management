@@ -2,8 +2,10 @@ import React from 'react';
 import { View, Text, TouchableOpacity, FlatList, Animated } from 'react-native';
 import { formatMoney, formatMoneyWithUnit } from '../utils/NumberUtils';
 import ArrowIcon from '../assets/svgIcons/ArrowIcon';
-import { TransactionByMonth } from '../types/Transaction';
+import { TransactionByMonth } from '../models/Transaction';
 import { parseDateString } from '../utils/TimeUtil';
+import { getDaysInMonth, getFirstWeekdayOfMonth, getLastWeekdayOfMonth } from '../utils/DataUtils';
+import { TEXT_STRING } from '../constants/String';
 
 interface CalendarComponentProps {
     data: TransactionByMonth[];
@@ -46,35 +48,23 @@ const CalendarComponent = ({
         onMonthChange(newMonth, newYear);
     };
 
-    const getDaysInMonth = (month: number, year: number) => {
-        return new Date(year, month + 1, 0).getDate();
-    };
-
-    const getFirstWeekdayOfMonth = (month: number, year: number) => {
-        return new Date(year, month, 1).getDay();
-    };
-
-    const getLastWeekdayOfMonth = (month: number, year: number) => {
-        return new Date(year, month + 1, 0).getDay();
-    };
-
-    // Group transactions by date (created_at)
+    // Group transactions by date (createdAt)
     const groupTransactionsByDate = () => {
         const transactionsByDate: { [key: string]: { income: number; expense: number } } = {};
 
         data.forEach((monthData) => {
             monthData.data.forEach((transaction) => {
-                const date = parseDateString(transaction.created_at);
+                const date = parseDateString(transaction.createdAt);
                 const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 
                 if (!transactionsByDate[dateKey]) {
                     transactionsByDate[dateKey] = { income: 0, expense: 0 };
                 }
 
-                if (transaction.transaction_type.is_income) {
-                    transactionsByDate[dateKey].income += transaction.transaction_amount;
+                if (transaction.transactionType.isIncome) {
+                    transactionsByDate[dateKey].income += transaction.transactionAmount;
                 } else {
-                    transactionsByDate[dateKey].expense += transaction.transaction_amount;
+                    transactionsByDate[dateKey].expense += transaction.transactionAmount;
                 }
             });
         });
@@ -148,16 +138,16 @@ const CalendarComponent = ({
             {/* Summary */}
             <View className='flex-row items-center justify-center p-4 space-x-10'>
                 <View className='flex items-center'>
-                    <Text className='text-xs text-white'>Tổng thu</Text>
-                    <Text className='text-base text-blue-500'>{formatMoney(totalIncome)}đ</Text>
+                    <Text className='text-xs text-white'>{TEXT_STRING.INCOME_TOTAL}</Text>
+                    <Text className='text-base text-green-500'>{formatMoney(totalIncome)}{TEXT_STRING.UNIT_SHOT}</Text>
                 </View>
                 <View className='flex items-center'>
-                    <Text className='text-xs text-white'>Tổng chi</Text>
-                    <Text className='text-base text-red-500'>{formatMoney(totalExpense)}đ</Text>
+                    <Text className='text-xs text-white'>{TEXT_STRING.EXPENSE_TOTAL}</Text>
+                    <Text className='text-base text-red-500'>{formatMoney(totalExpense)}{TEXT_STRING.UNIT_SHOT}</Text>
                 </View>
                 <View className='flex items-center'>
-                    <Text className='text-xs text-white'>Chênh lệch</Text>
-                    <Text className='text-base text-green-500'>{formatMoney(balance)}đ</Text>
+                    <Text className='text-xs text-white'>{TEXT_STRING.MONTHLY_BALANCE}</Text>
+                    <Text className='text-base text-[#0071BB]'>{formatMoney(balance)}{TEXT_STRING.UNIT_SHOT}</Text>
                 </View>
             </View>
 
@@ -184,7 +174,7 @@ const CalendarComponent = ({
                             return (
                                 <View className='flex-1 p-1 border border-gray-200'>
                                     <Text className='text-sm font-bold text-white'>{item.day}</Text>
-                                    {displayMoney(item.income, 'text-blue-500')}
+                                    {displayMoney(item.income, 'text-green-500')}
                                     {displayMoney(item.expense, 'text-red-500')}
                                 </View>
                             );

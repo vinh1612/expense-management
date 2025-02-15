@@ -25,6 +25,17 @@ export const formatMoneyWithUnit = (amount: number) => {
     return formatMoney(amount);
 };
 
+export const formatMoneyWithUnitShort = (num: number) => {
+    if (num >= 1e9) {
+        return parseFloat((num / 1e9).toFixed(1)) + ' Tỷ';
+    } else if (num >= 1e6) {
+        return parseFloat((num / 1e6).toFixed(1)) + ' Tr';
+    } else if (num >= 1e3) {
+        return parseFloat((num / 1e3).toFixed(1)) + ' K';
+    } else {
+        return num.toString();
+    }
+}
 
 export const removeFormatMoney = (amount: string) => {
     if (amount === '') {

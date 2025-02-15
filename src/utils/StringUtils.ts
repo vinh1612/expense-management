@@ -1,5 +1,4 @@
-import { TRANSACTION_SOURCE } from "../constants/Constant"
-
+import { TRANSACTION_SOURCE } from "../constants/Status"
 
 export const getTransactionSourceText = (transactionSource: number) => {
     switch (transactionSource) {
@@ -17,4 +16,11 @@ export function getRandomHexColor(): string {
     const randomColor = Math.floor(Math.random() * 0xffffff);
     // Converting the number to a hexadecimal string and padding with zeros
     return `#${randomColor.toString(16).padStart(6, "0")}`;
+}
+
+export function capitalizeWords(str: string): string {
+    return str
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
 }
