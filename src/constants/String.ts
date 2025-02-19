@@ -38,7 +38,7 @@ export const TEXT_STRING = {
 
 export const PAYMENT_METHOD = {
     CASH: 'Tiền mặt',
-    BANK: 'Tài Khoản Ngân Hàng',
+    BANK: 'Ngân Hàng',
     MOMO: 'Ví MoMo',
 }
 

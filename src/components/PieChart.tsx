@@ -1,5 +1,6 @@
 import React from 'react'
 import { PieChart, pieDataItem } from "react-native-gifted-charts";
+import { Text as SvgText } from 'react-native-svg';
 
 const PieChartComponent = ({ pieData }: { pieData: pieDataItem[] }) => {
 
@@ -8,10 +9,17 @@ const PieChartComponent = ({ pieData }: { pieData: pieDataItem[] }) => {
             donut
             data={pieData}
             innerCircleColor={'#374151'}
-            showText
-            showValuesAsLabels
-            textColor='white'
-            textSize={14}
+            showExternalLabels
+            labelLineConfig={{
+                color: 'white',
+                length: 4,
+                labelComponentWidth: 40,
+                avoidOverlappingOfLabels: false
+            }}
+            extraRadius={60}
+            externalLabelComponent={item => (
+                <SvgText fill={'white'}>{item?.text ?? ''}</SvgText>
+            )}
         />
     )
 }

@@ -328,7 +328,7 @@ const ReportScreen = () => {
   }) {
     return (
       pieData.length === 0 ? <EmptyList /> : (
-        <View className='flex flex-col items-center pt-2 space-y-4'>
+        <View className='flex flex-col items-center'>
           <PieChartComponent pieData={pieData} />
           <View className="w-full">
             <FlatList
@@ -337,7 +337,7 @@ const ReportScreen = () => {
               numColumns={3}
               scrollEnabled={false}
               renderItem={({ item }) => (
-                <View style={{ width: `${100 / 3}%` }} className='flex flex-row items-center space-x-2' key={item.text}>
+                <View className='flex flex-row items-center justify-center flex-1 space-x-2' key={item.text}>
                   <View style={{ backgroundColor: item.color }} className='w-3 h-3 border rounded-full' />
                   <Text className='text-white'>{item.text}</Text>
                 </View>
@@ -442,7 +442,7 @@ const ReportScreen = () => {
           </View>
           {/* Phân bổ tài chính */}
           <View className="p-4 capitalize bg-gray-800 rounded-xl">
-            <Text className="mb-4 text-lg font-semibold text-white capitalize">
+            <Text className="text-lg font-semibold text-white capitalize">
               {filter === TRANSACTION_TYPE.INCOME
                 ? TEXT_STRING.INCOME_ALLOCATION
                 : (filter === TRANSACTION_TYPE.EXPENSE ? TEXT_STRING.EXPENSE_ALLOCATION : TEXT_STRING.FINANCIAL_ALLOCATION_BY)

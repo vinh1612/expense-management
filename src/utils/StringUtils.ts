@@ -1,13 +1,14 @@
 import { TRANSACTION_SOURCE } from "../constants/Status"
+import { PAYMENT_METHOD } from "../constants/String"
 
 export const getTransactionSourceText = (transactionSource: number) => {
     switch (transactionSource) {
         case TRANSACTION_SOURCE.CASH:
-            return 'Tiền Mặt'
+            return PAYMENT_METHOD.CASH
         case TRANSACTION_SOURCE.BANK:
-            return 'Tài Khoản Ngân Hàng'
+            return PAYMENT_METHOD.BANK
         default:
-            return 'Ví MoMo'
+            return PAYMENT_METHOD.MOMO
     }
 }
 
