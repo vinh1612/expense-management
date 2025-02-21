@@ -12,13 +12,13 @@ const BarChartComponent = ({ barData }: { barData: barDataItem[] }) => {
             data={barData}
             initialSpacing={10}
             spacing={14}
-            stepValue={5e4}
             xAxisColor={'white'}
             yAxisColor={'white'}
             yAxisTextStyle={{ color: 'white' }}
             xAxisLabelTextStyle={{ color: 'white', textAlign: 'center' }}
             formatYLabel={(value: string) => formatMoneyWithUnitShort(Number(value))}
-            yAxisLabelWidth={50}
+            yAxisLabelWidth={55}
+            maxValue={barData.length > 0 ? Math.max(...barData.map(item => item.value ?? 0)) : 0}
             renderTooltip={(item: any) => {
                 return (
                     <View

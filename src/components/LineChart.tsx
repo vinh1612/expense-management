@@ -1,4 +1,3 @@
-import { Text, View } from "react-native";
 import { LineChart, lineDataItem } from "react-native-gifted-charts";
 import { formatMoneyWithUnitShort } from "../utils/NumberUtils";
 
@@ -13,6 +12,14 @@ const LineChartComponent = ({ lineData, lineData2, color1, color2 }: {
             hideRules
             data={lineData}
             data2={lineData2}
+            overflowBottom={50}
+            animateOnDataChange
+            isAnimated
+            animationDuration={500}
+            onDataChangeAnimationDuration={500}
+            scrollAnimation
+            animateTogether
+            renderDataPointsAfterAnimationEnds
             maxValue={lineData2
                 ? Math.max(...lineData.map(item => item.value ?? 0), ...lineData2.map(item => item.value ?? 0))
                 : Math.max(...lineData.map(item => item.value ?? 0))
