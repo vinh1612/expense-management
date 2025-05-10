@@ -137,7 +137,7 @@ const ModalTransactionUpdate = ({ modalVisible, itemSelected, setModalVisible, s
                                     onChangeText: setTransactionNote,
                                     value: transactionNote,
                                     isRequired: false,
-                                    style: { maxHeight: 100 },
+                                    numberOfLines: 4,
                                     placeholder: PLACEHOLDER_TITLE.NOTE
                                 })}
 

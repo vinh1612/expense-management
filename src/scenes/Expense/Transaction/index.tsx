@@ -1,7 +1,9 @@
 import {
   View, Text, SafeAreaView, Image,
   SectionList, FlatList, Pressable,
-  ImageSourcePropType, TouchableOpacity
+  ImageSourcePropType, TouchableOpacity,
+  Animated,
+  Easing
 } from 'react-native'
 import React from 'react'
 import { formatDate } from '../../../utils/TimeUtil'
@@ -36,6 +38,8 @@ const TransactionScreen = () => {
   const [currentYear, setCurrentYear] = React.useState(new Date().getFullYear());
   const isFocused = useIsFocused();
 
+  const rotateAnim = React.useRef(new Animated.Value(isRotated ? 1 : 0)).current;
+
   const transactions = useArray<Transaction>(TransactionCache.getInstance.getTransactionCache())
   const transactionsSection = useArray<TransactionByMonth>(
     groupDataByTime({ data: TransactionCache.getInstance.getTransactionCache(), month: currentMonth, year: currentYear })
@@ -53,6 +57,15 @@ const TransactionScreen = () => {
       getDataTransaction()
     }
   }, [isFocused])
+
+  React.useEffect(() => {
+    Animated.timing(rotateAnim, {
+      toValue: isRotated ? 1 : 0,
+      duration: 300,
+      easing: Easing.inOut(Easing.ease),
+      useNativeDriver: true
+    }).start();
+  }, [isRotated, rotateAnim]);
 
   const handleMonthChange = (newMonth: number, newYear: number) => {
     setCurrentMonth(newMonth)
@@ -89,6 +102,7 @@ const TransactionScreen = () => {
               <CalendarComponent
                 data={transactionsSection.array}
                 onMonthChange={handleMonthChange}
+                onMonthChoose={() => { }}
                 isExpanded={isRotated}
               />
 
@@ -96,7 +110,18 @@ const TransactionScreen = () => {
                 className='absolute bottom-[-16px] self-center bg-gray-700 px-8 pt-2 pb-1 rounded-full'
                 onPress={() => setIsRotated(!isRotated)}
               >
-                <DoubleArrowIcon direction={isRotated ? 'up' : 'down'} color='gray' size={18} />
+                <Animated.View
+                  style={{
+                    transform: [{
+                      rotate: rotateAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: ['0deg', '180deg']
+                      })
+                    }]
+                  }}
+                >
+                  <DoubleArrowIcon direction="down" color='gray' size={18} />
+                </Animated.View>
               </Pressable>
             </View>
 

@@ -1,7 +1,7 @@
 import {
   View, Text, SafeAreaView, ScrollView,
   TextInput, TouchableOpacity, InputModeOptions,
-  Image, TextStyle,
+  Image,
 } from 'react-native'
 import React from 'react'
 import { convertDateFormatToString, getTodayDate } from '../../../utils/TimeUtil';
@@ -29,11 +29,10 @@ interface ViewInputLabel {
   value: string;
   inputMode?: InputModeOptions;
   maxLength?: number;
-  style?: TextStyle;
   isRequired?: boolean;
   icon?: React.ReactNode
-  readonly?: boolean;
   placeholder?: string;
+  numberOfLines?: number;
 }
 
 export function renderViewInputLabel({
@@ -41,11 +40,10 @@ export function renderViewInputLabel({
   value,
   inputMode,
   maxLength,
-  style,
   isRequired = true,
   placeholder,
   icon,
-  readonly,
+  numberOfLines = 1,
   onPressButton,
   onChangeText
 }: ViewInputLabel) {
@@ -58,15 +56,14 @@ export function renderViewInputLabel({
         <Text className='text-white'>{contentLabel}{isRequired && <Text className='text-red-600'> *</Text>}</Text>
         <View className='flex flex-row items-center justify-between'>
           <TextInput
-            className='pt-1 pb-0 text-white'
             multiline
-            numberOfLines={1}
+            readOnly
+            className='pt-1 pb-0 text-white'
+            numberOfLines={numberOfLines}
             onChangeText={onChangeText}
             value={value}
             inputMode={inputMode}
             maxLength={maxLength}
-            style={style}
-            readOnly
             placeholder={placeholder}
           />
           {icon}
@@ -76,15 +73,13 @@ export function renderViewInputLabel({
       <View className='p-3 bg-gray-700 border border-gray-600 rounded-lg'>
         <Text className='text-white'>{contentLabel}{isRequired && <Text className='text-red-600'> *</Text>}</Text>
         <TextInput
-          className='pt-1 pb-0 text-white'
           multiline
-          numberOfLines={1}
+          numberOfLines={numberOfLines}
+          className='pt-1 pb-0 text-white'
           onChangeText={onChangeText}
           value={value}
           inputMode={inputMode}
           maxLength={maxLength}
-          style={style}
-          readOnly={readonly}
           placeholder={placeholder}
         />
       </View>
@@ -194,7 +189,7 @@ const TransactionAddScreen = ({ navigation }: any) => {
               onChangeText: setTransactionNote,
               value: transactionNote,
               isRequired: false,
-              style: { maxHeight: 100 },
+              numberOfLines: 4,
               placeholder: PLACEHOLDER_TITLE.NOTE
             })}
 

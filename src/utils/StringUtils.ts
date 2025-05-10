@@ -25,3 +25,29 @@ export function capitalizeWords(str: string): string {
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
         .join(' ');
 }
+
+export const getWeekDaysFromDevice = (): string[] => {
+    const locale = Intl.DateTimeFormat().resolvedOptions().locale ?? 'vi-VN';
+    const baseDate = new Date(Date.UTC(2021, 5, 7));
+    const weekDays: string[] = [];
+    for (let i = 0; i < 7; i++) {
+        const date = new Date(baseDate);
+        date.setDate(baseDate.getDate() + i);
+        const dayName = new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(date);
+        weekDays.push(dayName);
+    }
+    return weekDays;
+};
+
+export const getMonthDaysFromDevice = (): string[] => {
+    const locale = Intl.DateTimeFormat().resolvedOptions().locale ?? 'vi-VN';
+    const baseDate = new Date(Date.UTC(2021, 12, 7));
+    const monthDays: string[] = [];
+    for (let i = 0; i < 12; i++) {
+        const date = new Date(baseDate);
+        date.setMonth(baseDate.getMonth() + i);
+        const dayName = new Intl.DateTimeFormat(locale, { month: 'long' }).format(date);
+        monthDays.push(dayName);
+    }
+    return monthDays;
+};

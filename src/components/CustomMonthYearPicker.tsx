@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Modal, FlatList, Platform } from 'react-native';
+import { getMonthDaysFromDevice } from '../utils/StringUtils';
 
 interface CustomMonthYearPickerProps {
     showPicker: boolean;
@@ -17,17 +18,14 @@ const CustomMonthYearPicker: React.FC<CustomMonthYearPickerProps> = ({
     onConfirm,
     showPicker,
     onClose,
-    minYear = new Date().getFullYear() - 10,
-    maxYear = new Date().getFullYear() + 10,
+    minYear = new Date().getFullYear() - 50,
+    maxYear = new Date().getFullYear() + 50,
 }) => {
 
     const [selectedMonth, setSelectedMonth] = React.useState(initialDate.getMonth());
     const [selectedYear, setSelectedYear] = React.useState(initialDate.getFullYear());
     const years = Array.from({ length: maxYear - minYear + 1 }, (_, i) => minYear + i);
-    const months = [
-        'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
-        'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12',
-    ];
+    const months = getMonthDaysFromDevice();
 
     const monthFlatListRef = React.useRef<FlatList<string>>(null);
     const yearFlatListRef = React.useRef<FlatList<number>>(null);
@@ -75,7 +73,7 @@ const CustomMonthYearPicker: React.FC<CustomMonthYearPickerProps> = ({
         return (
             <View
                 className='absolute left-0 w-full h-12 border-t border-b top-12 border-t-white border-b-white'
-            ></View>
+            />
         )
     }
 

@@ -6,23 +6,69 @@ import { TransactionByMonth } from '../models/Transaction';
 import { parseDateString } from '../utils/TimeUtil';
 import { getDaysInMonth, getFirstWeekdayOfMonth, getLastWeekdayOfMonth } from '../utils/DataUtils';
 import { TEXT_STRING } from '../constants/String';
+import { getWeekDaysFromDevice } from '../utils/StringUtils';
+import CustomDateTimePicker from './CustomDateTimePicker';
 
 interface CalendarComponentProps {
     data: TransactionByMonth[];
     onMonthChange: (newMonth: number, newYear: number) => void;
+    onMonthChoose: (newMonth: number, newYear: number) => void;
     isExpanded?: boolean
 }
 
 const CalendarComponent = ({
     data,
     isExpanded = true,
-    onMonthChange
+    onMonthChange, onMonthChoose
 }: CalendarComponentProps) => {
 
     const today = new Date();
+    const [initialDate, setInitialDate] = React.useState(new Date());
     const [currentMonth, setCurrentMonth] = React.useState(today.getMonth());
     const [currentYear, setCurrentYear] = React.useState(today.getFullYear());
-    const weekdayTitles = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+    const weekdayTitles = getWeekDaysFromDevice();
+
+    const contentRef = React.useRef<View>(null);
+    const [contentHeight, setContentHeight] = React.useState(0);
+    const animatedHeight = React.useRef(new Animated.Value(isExpanded ? 1 : 0)).current;
+
+    const [isShowChooseMonth, setIsShowChooseMonth] = React.useState(false);
+
+    const measureContent = () => {
+        if (contentRef.current) {
+            contentRef.current.measure((x, y, width, height) => {
+                if (height > 0) {
+                    setContentHeight(height);
+                }
+            });
+        }
+    };
+    React.useEffect(() => {
+        const timer = setTimeout(() => {
+            measureContent();
+        }, 100);
+        return () => clearTimeout(timer);
+    }, []);
+
+    React.useEffect(() => {
+        measureContent();
+    }, [data, currentMonth, currentYear]);
+
+    React.useEffect(() => {
+        Animated.timing(animatedHeight, {
+            toValue: isExpanded ? 1 : 0,
+            duration: 300,
+            useNativeDriver: false,
+        }).start();
+    }, [isExpanded]);
+
+    const animatedHeightStyle = {
+        height: animatedHeight.interpolate({
+            inputRange: [0, 1],
+            outputRange: [0, contentHeight > 0 ? contentHeight : 1]
+        }),
+        opacity: animatedHeight
+    };
 
     const changeMonth = (direction: string) => {
         let newMonth = currentMonth;
@@ -46,6 +92,16 @@ const CalendarComponent = ({
         setCurrentMonth(newMonth);
         setCurrentYear(newYear);
         onMonthChange(newMonth, newYear);
+        const newDate = new Date(newYear, newMonth, 1);
+        setInitialDate(newDate);
+    };
+
+    const chooseMonth = (date: Date) => {
+        setInitialDate(date);
+        setCurrentMonth(date.getMonth());
+        setCurrentYear(date.getFullYear());
+        onMonthChoose(date.getMonth(), date.getFullYear());
+        setIsShowChooseMonth(false);
     };
 
     // Group transactions by date (createdAt)
@@ -115,74 +171,133 @@ const CalendarComponent = ({
     const { totalIncome, totalExpense, balance } = calculateTotals();
 
     const displayMoney = (value: number, className: string) => (
-        <Text className={`text-xs text-right ${className}`}>{value > 0 ? formatMoneyWithUnit(value) : ''}</Text>
+        <Text className={`text-xs text-right ${className}`}>
+            {value > 0 ? formatMoneyWithUnit(value) : ''}
+        </Text>
     );
 
     const isCurrentMonth = today.getMonth() === currentMonth && today.getFullYear() === currentYear;
 
     return (
-        <View>
-            {/* Header */}
-            <View className='flex-row items-center p-2 border-b justify-evenly border-b-white'>
-                <TouchableOpacity onPress={() => changeMonth('prev')} className='p-2'>
-                    <ArrowIcon direction='left' color='white' />
-                </TouchableOpacity>
-                <Text className='w-40 text-lg font-bold text-center text-yellow-200'>
-                    Tháng {isCurrentMonth ? 'này' : `${(currentMonth + 1)}/${currentYear}`}
-                </Text>
-                <TouchableOpacity onPress={() => changeMonth('next')} className='p-2'>
-                    <ArrowIcon direction='right' color='white' />
-                </TouchableOpacity>
-            </View>
+        <>
+            <View>
+                {/* Header */}
+                <View className='flex-row items-center p-2 border-b justify-evenly border-b-white'>
+                    <TouchableOpacity onPress={() => changeMonth('prev')} className='p-2'>
+                        <ArrowIcon direction='left' color='white' />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={() => setIsShowChooseMonth(true)}
+                        className='flex-1'
+                    >
+                        <Text className='text-lg font-bold text-center text-yellow-200'>
+                            Tháng {isCurrentMonth ? 'này' : `${(currentMonth + 1)}/${currentYear}`}
+                        </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => changeMonth('next')} className='p-2'>
+                        <ArrowIcon direction='right' color='white' />
+                    </TouchableOpacity>
+                </View>
 
-            {/* Summary */}
-            <View className='flex-row items-center justify-center p-4 space-x-10'>
-                <View className='flex items-center'>
-                    <Text className='text-xs text-white'>{TEXT_STRING.INCOME_TOTAL}</Text>
-                    <Text className='text-base text-green-500'>{formatMoney(totalIncome)}{TEXT_STRING.UNIT_SHOT}</Text>
-                </View>
-                <View className='flex items-center'>
-                    <Text className='text-xs text-white'>{TEXT_STRING.EXPENSE_TOTAL}</Text>
-                    <Text className='text-base text-red-500'>{formatMoney(totalExpense)}{TEXT_STRING.UNIT_SHOT}</Text>
-                </View>
-                <View className='flex items-center'>
-                    <Text className='text-xs text-white'>{TEXT_STRING.MONTHLY_BALANCE}</Text>
-                    <Text className='text-base text-[#0071BB]'>{formatMoney(balance)}{TEXT_STRING.UNIT_SHOT}</Text>
-                </View>
-            </View>
-
-            <Animated.View style={{ ...(!isExpanded && { height: 0, opacity: 0 }) }}>
-                <View>
-                    {/* Weekday Titles */}
-                    <View className='flex-row justify-between w-full bg-blue-200' >
-                        {weekdayTitles.map((weekday) => (
-                            <Text key={weekday} className='flex-1 py-1 text-sm font-bold text-center text-black'>
-                                {weekday}
-                            </Text>
-                        ))}
+                {/* Summary */}
+                <View className='flex-row items-center justify-center p-4 space-x-10'>
+                    <View className='flex items-center'>
+                        <Text className='text-xs text-white'>{TEXT_STRING.INCOME_TOTAL}</Text>
+                        <Text className='text-base text-green-500'>{formatMoney(totalIncome)}{TEXT_STRING.UNIT_SHOT}</Text>
                     </View>
-
-                    {/* Calendar Grid */}
-                    <FlatList
-                        data={generateDays()}
-                        numColumns={7}
-                        keyExtractor={(_, index) => index.toString()}
-                        renderItem={({ item }) => {
-                            if (!item.day) {
-                                return <View className='flex-1 p-1 border border-gray-200' />;
-                            }
-                            return (
-                                <View className='flex-1 p-1 border border-gray-200'>
-                                    <Text className='text-sm font-bold text-white'>{item.day}</Text>
-                                    {displayMoney(item.income, 'text-green-500')}
-                                    {displayMoney(item.expense, 'text-red-500')}
-                                </View>
-                            );
-                        }}
-                    />
+                    <View className='flex items-center'>
+                        <Text className='text-xs text-white'>{TEXT_STRING.EXPENSE_TOTAL}</Text>
+                        <Text className='text-base text-red-500'>{formatMoney(totalExpense)}{TEXT_STRING.UNIT_SHOT}</Text>
+                    </View>
+                    <View className='flex items-center'>
+                        <Text className='text-xs text-white'>{TEXT_STRING.MONTHLY_BALANCE}</Text>
+                        <Text className='text-base text-[#0071BB]'>{formatMoney(balance)}{TEXT_STRING.UNIT_SHOT}</Text>
+                    </View>
                 </View>
-            </Animated.View>
-        </View>
+
+                {/* Nội dung ẩn để đo chiều cao */}
+                <View
+                    ref={contentRef}
+                    style={{ position: 'absolute', opacity: 0, zIndex: -1 }}
+                    onLayout={measureContent}
+                >
+                    <View>
+                        {/* Weekday Titles */}
+                        <View className='flex-row justify-between w-full bg-blue-200' >
+                            {weekdayTitles.map((weekday) => (
+                                <Text key={weekday} className='flex-1 py-1 text-sm font-bold text-center text-black'>
+                                    {weekday}
+                                </Text>
+                            ))}
+                        </View>
+
+                        {/* Calendar Grid */}
+                        <FlatList
+                            data={generateDays()}
+                            numColumns={7}
+                            keyExtractor={(_, index) => index.toString()}
+                            renderItem={({ item }) => {
+                                if (!item.day) {
+                                    return <View className='flex-1 p-1 border border-gray-200' />;
+                                }
+                                return (
+                                    <View className='flex-1 p-1 border border-gray-200'>
+                                        <Text className='text-sm font-bold text-white'>{item.day}</Text>
+                                        {displayMoney(item.income, 'text-green-500')}
+                                        {displayMoney(item.expense, 'text-red-500')}
+                                    </View>
+                                );
+                            }}
+                        />
+                    </View>
+                </View>
+
+                {/* Animated View hiển thị */}
+                <Animated.View
+                    className="overflow-hidden"
+                    style={animatedHeightStyle}
+                >
+                    <View>
+                        {/* Weekday Titles */}
+                        <View className='flex-row justify-between w-full bg-blue-200' >
+                            {weekdayTitles.map((weekday) => (
+                                <Text key={weekday} className='flex-1 py-1 text-sm font-bold text-center text-black'>
+                                    {weekday}
+                                </Text>
+                            ))}
+                        </View>
+
+                        {/* Calendar Grid */}
+                        <FlatList
+                            data={generateDays()}
+                            numColumns={7}
+                            keyExtractor={(_, index) => index.toString()}
+                            renderItem={({ item }) => {
+                                if (!item.day) {
+                                    return <View className='flex-1 p-1 border border-gray-200' />;
+                                }
+                                return (
+                                    <View className='flex-1 p-1 border border-gray-200'>
+                                        <Text className='text-sm font-bold text-white'>{item.day}</Text>
+                                        {displayMoney(item.income, 'text-green-500')}
+                                        {displayMoney(item.expense, 'text-red-500')}
+                                    </View>
+                                );
+                            }}
+                        />
+                    </View>
+                </Animated.View>
+            </View>
+
+            <CustomDateTimePicker
+                type='month'
+                initialDate={initialDate}
+                isShow={isShowChooseMonth}
+                onClose={() => setIsShowChooseMonth(false)}
+                onConfirm={chooseMonth}
+            />
+        </>
     );
 };
+
 export default CalendarComponent;
