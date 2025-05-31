@@ -1,8 +1,17 @@
 import React from "react";
-import { View, Text, PanResponder, TouchableOpacity } from "react-native";
+import { View, Text, PanResponder, TouchableOpacity, StyleSheet } from "react-native";
 import { RGBAColorStyle } from "../models/CalendarStyle";
 import CustomDropdown from "./CustomDropdown";
 import { CALENDAR_STYLE } from "../constants/Status";
+
+const styles = StyleSheet.create({
+    thumbShadow: {
+        elevation: 2, // Android shadow
+        shadowOffset: { width: 0, height: 1 }, // iOS shadow
+        shadowOpacity: 0.3,
+        shadowRadius: 2,
+    },
+});
 
 const CustomSlider = ({
     min, max, step, value, title,
@@ -18,26 +27,60 @@ const CustomSlider = ({
     const [thumbPosition, setThumbPosition] = React.useState(
         ((value - min) / (max - min)) * trackWidth
     );
+    const isDragging = React.useRef(false);
+    const trackLayoutX = React.useRef(0);
+    const trackRef = React.useRef<View>(null);
 
-    const panResponder = PanResponder.create({
-        onStartShouldSetPanResponder: () => true,
-        onMoveShouldSetPanResponder: () => true,
-        onPanResponderMove: (_, gestureState) => {
-            const effectiveTrackWidth = Math.abs(trackWidth - 20);
-            let newPosition = thumbPosition + gestureState.dx;
-            newPosition = Math.max(0, Math.min(newPosition, effectiveTrackWidth));
+    const updatePosition = React.useCallback((pageX: number) => {
+        if (!trackRef.current || trackWidth <= 20) return;
+        trackRef.current.measure((x, y, width, height, pageXOffset) => {
+            const effectiveTrackWidth = trackWidth - 20; // 20 là width của thumb
+            const relativeX = pageX - pageXOffset; // Vị trí relative với track
+            // Clamp position trong khoảng hợp lệ
+            const newPosition = Math.max(0, Math.min(relativeX - 10, effectiveTrackWidth)); // 10 là nửa width thumb
             const newValue = Math.round(
                 (min + (newPosition / effectiveTrackWidth) * (max - min)) / step
             ) * step;
             setThumbPosition(newPosition);
             onValueChange(newValue);
+        });
+    }, [trackWidth, min, max, step, onValueChange]);
+
+    const panResponder = React.useMemo(() => PanResponder.create({
+        onStartShouldSetPanResponder: () => true,
+        onMoveShouldSetPanResponder: () => true,
+        onPanResponderGrant: (evt) => {
+            isDragging.current = true;
+            updatePosition(evt.nativeEvent.pageX);
         },
-    });
+        onPanResponderMove: (evt) => {
+            if (isDragging.current) {
+                updatePosition(evt.nativeEvent.pageX);
+            }
+        },
+        onPanResponderRelease: () => {
+            isDragging.current = false;
+        },
+        onPanResponderTerminate: () => {
+            isDragging.current = false;
+        },
+    }), [updatePosition]);
 
     React.useEffect(() => {
-        const effectiveTrackWidth = Math.abs(trackWidth - 20);
-        setThumbPosition(((value - min) / (max - min)) * effectiveTrackWidth)
+        if (!isDragging.current && trackWidth > 0) {
+            const effectiveTrackWidth = Math.abs(trackWidth - 20);
+            const newPosition = ((value - min) / (max - min)) * effectiveTrackWidth;
+            setThumbPosition(newPosition);
+        }
     }, [trackWidth, value, min, max]);
+
+    const trackStyle = React.useMemo(() => ({ width: trackWidth }), [trackWidth]);
+    const trackColorStyle = React.useMemo(() => ({ backgroundColor: trackColor }), [trackColor]);
+    const thumbStyle = React.useMemo(() => ({
+        left: thumbPosition,
+        backgroundColor: thumbColor,
+        ...styles.thumbShadow,
+    }), [thumbPosition, thumbColor]);
 
     return (
         <View
@@ -51,14 +94,18 @@ const CustomSlider = ({
         >
             <Text className="text-base text-white" >{title}</Text>
             <View
+                ref={trackRef}
                 className='justify-center h-10'
-                style={{ width: trackWidth }}
+                style={trackStyle}
+                onLayout={(e) => {
+                    trackLayoutX.current = e.nativeEvent.layout.x;
+                }}
+                {...panResponder.panHandlers}
             >
-                <View className="w-full h-1 rounded-full" style={{ backgroundColor: trackColor }} />
+                <View className="w-full h-1 rounded-full" style={trackColorStyle} />
                 <View
                     className="absolute w-5 h-5 rounded-full"
-                    style={{ left: thumbPosition, backgroundColor: thumbColor }}
-                    {...panResponder.panHandlers}
+                    style={thumbStyle}
                 />
             </View>
         </View>
@@ -88,12 +135,44 @@ const ColorPickerCustom = ({
         { id: CALENDAR_STYLE.CURRENT_DATE, label: 'Màu ngày hiện tại của lịch' },
     ];
 
+    const debouncedOnColorChange = React.useCallback(
+        (red: number, green: number, blue: number, opacity: number, type: number) => {
+            const timeoutId = setTimeout(() => {
+                onColorChange(red, green, blue, opacity, type);
+            }, 16); // ~60fps
+            return () => clearTimeout(timeoutId);
+        }, [onColorChange]);
+
     React.useEffect(() => {
         setRedState(initialColor.red ?? 0);
         setGreenState(initialColor.green ?? 0)
         setBlueState(initialColor.blue ?? 0)
         setOpacityState(initialColor.opacity ?? 0)
     }, [typeSelected, initialColor]);
+
+    const handleRedChange = React.useCallback((red: number) => {
+        setRedState(red);
+        debouncedOnColorChange(red, greenState, blueState, opacityState, typeSelected);
+    }, [greenState, blueState, opacityState, typeSelected, debouncedOnColorChange]);
+
+    const handleGreenChange = React.useCallback((green: number) => {
+        setGreenState(green);
+        debouncedOnColorChange(redState, green, blueState, opacityState, typeSelected);
+    }, [redState, blueState, opacityState, typeSelected, debouncedOnColorChange]);
+
+    const handleBlueChange = React.useCallback((blue: number) => {
+        setBlueState(blue);
+        debouncedOnColorChange(redState, greenState, blue, opacityState, typeSelected);
+    }, [redState, greenState, opacityState, typeSelected, debouncedOnColorChange]);
+
+    const handleOpacityChange = React.useCallback((opacity: number) => {
+        setOpacityState(opacity);
+        debouncedOnColorChange(redState, greenState, blueState, opacity, typeSelected);
+    }, [redState, greenState, blueState, typeSelected, debouncedOnColorChange]);
+
+    const handleTypeSelect = React.useCallback((option: { id: number }) => {
+        onChangeType(option.id);
+    }, [onChangeType]);
 
     return (
         <View>
@@ -102,9 +181,7 @@ const ColorPickerCustom = ({
                     <CustomDropdown
                         options={options}
                         selectedId={typeSelected}
-                        onSelect={(option) => {
-                            onChangeType(option.id)
-                        }}
+                        onSelect={handleTypeSelect}
                     />
                 </View>
             </View>
@@ -116,10 +193,7 @@ const ColorPickerCustom = ({
                 thumbColor="white"
                 trackColor="red"
                 title="Đỏ"
-                onValueChange={(red) => {
-                    setRedState(red);
-                    onColorChange(red, greenState, blueState, opacityState, typeSelected);
-                }}
+                onValueChange={handleRedChange}
             />
 
             <CustomSlider
@@ -130,10 +204,7 @@ const ColorPickerCustom = ({
                 thumbColor="white"
                 trackColor="green"
                 title="Xanh lá"
-                onValueChange={(green) => {
-                    setGreenState(green);
-                    onColorChange(redState, green, blueState, opacityState, typeSelected);
-                }}
+                onValueChange={handleGreenChange}
             />
 
             <CustomSlider
@@ -144,10 +215,7 @@ const ColorPickerCustom = ({
                 thumbColor="white"
                 trackColor="blue"
                 title="Xanh dương"
-                onValueChange={(blue) => {
-                    setBlueState(blue);
-                    onColorChange(redState, greenState, blue, opacityState, typeSelected);
-                }}
+                onValueChange={handleBlueChange}
             />
             <CustomSlider
                 min={0}
@@ -155,10 +223,7 @@ const ColorPickerCustom = ({
                 step={0.01}
                 value={opacityState}
                 title="Độ mờ"
-                onValueChange={(opacity) => {
-                    setOpacityState(opacity);
-                    onColorChange(redState, greenState, blueState, opacity, typeSelected);
-                }}
+                onValueChange={handleOpacityChange}
             />
             <View className="flex-row justify-end mt-2">
                 <TouchableOpacity

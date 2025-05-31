@@ -121,18 +121,36 @@ const CustomDateTimePicker = ({
             <View className="items-center justify-center flex-1 bg-black/50">
                 <View className="w-[90%] max-h-[90%] bg-gray-700 border border-gray-600 rounded-lg">
                     <View
-                        className='flex flex-col p-6 space-y-2 border border-gray-600 rounded-t-lg'
+                        className='flex flex-col px-4 py-6 space-y-2 border border-gray-600 rounded-t-lg'
                         style={{ backgroundColor: backgroundHeaderColor }}
                     >
                         {type === 'weekday' ? (
                             <>
-                                <Text className='text-base' style={{ color: textColor }}>{week.firstDay.toDateString()} - {week.lastDay.toDateString()}</Text>
-                                <Text className='text-4xl font-bold' style={{ color: textColor }}>Tuần {weekOfYear}</Text>
+                                <Text className='text-4xl font-bold' style={{ color: textColor }}>Tuần {weekOfYear}, {date.getFullYear()}</Text>
+                                <Text className='text-lg' style={{ color: textColor }}>
+                                    {week.firstDay.toLocaleDateString(undefined, {
+                                        weekday: 'long',
+                                        month: 'long',
+                                        day: 'numeric'
+                                    })}
+                                    {' - '}
+                                    {week.lastDay.toLocaleDateString(undefined, {
+                                        weekday: 'long',
+                                        month: 'long',
+                                        day: 'numeric'
+                                    })}
+                                </Text>
                             </>
                         ) : (
                             <>
-                                <Text className='text-base' style={{ color: textColor }}>{date.getFullYear()}</Text>
-                                <Text className='text-4xl font-bold' style={{ color: textColor }}>{date.toDateString()}</Text>
+                                <Text className='text-xl' style={{ color: textColor }}>{date.getFullYear()}</Text>
+                                <Text className='text-4xl font-bold' style={{ color: textColor }}>
+                                    {date.toLocaleDateString(undefined, {
+                                        weekday: 'long',
+                                        month: 'long',
+                                        day: 'numeric'
+                                    })}
+                                </Text>
                             </>
                         )}
                         <TouchableOpacity className='absolute top-2 right-4' onPress={() => setShowEditColor(true)}>
@@ -190,7 +208,7 @@ const CustomDateTimePicker = ({
                                     {getTextCurrentDate(type)}
                                 </Text>
                             </TouchableOpacity>
-                            <View className='flex flex-row space-x-4'>
+                            <View className='flex flex-row space-x-6'>
                                 <TouchableOpacity onPress={() => { handleResetDate(); handleResetColor(); onClose(); }}>
                                     <Text className="text-base font-bold text-center" style={{ color: backgroundHeaderColor }}>
                                         {ACTION_CONTENT.CLOSE}

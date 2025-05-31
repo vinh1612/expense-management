@@ -65,7 +65,7 @@ const DateView: React.FC<DateViewProps> = ({
                     className="items-center flex-1"
                 >
                     <View
-                        className="flex items-center justify-center w-8 h-8"
+                        className="flex items-center justify-center w-10 h-10"
                         style={isSelected && [{ backgroundColor: rgba(backgroundColor) }, { borderRadius: 9999 }]}
                     >
                         <Text
