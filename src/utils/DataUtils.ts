@@ -1,8 +1,10 @@
+import { format } from "date-fns";
 import { TransactionByMonth, Transaction } from "../models/Transaction";
 import { parseDateString } from "./TimeUtil";
 
-export const groupDataByTime = ({ data, month, year, fromDate, toDate }: {
+export const groupDataByTime = ({ data, day, month, year, fromDate, toDate }: {
     data: Transaction[],
+    day?: number,
     month?: number,
     year?: number,
     fromDate?: Date,
@@ -10,15 +12,19 @@ export const groupDataByTime = ({ data, month, year, fromDate, toDate }: {
 }): TransactionByMonth[] => {
     return data
         .filter(item => {
-            const transactionDate = parseDateString(item.createdAt);
+            const transactionDate = new Date(format(parseDateString(item.createdAt), 'yyyy-MM-dd'));
             if (fromDate && toDate) {
                 return transactionDate >= fromDate &&
                     transactionDate <= toDate;
-            } else if (month) {
-                return month && transactionDate.getMonth() === month &&
+            } else if (day !== undefined) {
+                return transactionDate.getDate() === day &&
+                    transactionDate.getMonth() === month &&
+                    transactionDate.getFullYear() === year
+            } else if (month !== undefined) {
+                return transactionDate.getMonth() === month &&
                     transactionDate.getFullYear() === year
             }
-            return year && transactionDate.getFullYear() === year;
+            return year !== undefined && transactionDate.getFullYear() === year;
         })
         .reduce((acc: TransactionByMonth[], item) => {
             const existingGroup = acc.find(group => group.dateTime === item.createdAt);

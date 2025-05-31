@@ -1,6 +1,7 @@
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { Image, Platform, Text, TouchableOpacity, View } from "react-native";
 import { MODULE_TITLE } from "../constants/String";
+import React from "react";
 
 function CustomExpenseTabBar({ state, descriptors, navigation }: Readonly<BottomTabBarProps>) {
 
@@ -54,8 +55,7 @@ function CustomExpenseTabBar({ state, descriptors, navigation }: Readonly<Bottom
             />
             {index !== 2 && (
               <Text
-                className={`${isFocused ? 'font-bold' : ''} text-center`}
-                style={{ color: isFocused ? '#0071BB' : '#979797' }}
+                className={`text-center ${isFocused ? 'text-[#0071BB] font-bold' : 'text-[#979797]'}`}
               >
                 {textContent[index]}
               </Text>

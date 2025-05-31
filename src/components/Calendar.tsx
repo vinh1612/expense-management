@@ -7,19 +7,21 @@ import { parseDateString } from '../utils/TimeUtil';
 import { getDaysInMonth, getFirstWeekdayOfMonth, getLastWeekdayOfMonth } from '../utils/DataUtils';
 import { TEXT_STRING } from '../constants/String';
 import { getWeekDaysFromDevice } from '../utils/StringUtils';
-import CustomDateTimePicker from './CustomDateTimePicker';
+import CustomDateTimePicker from './DateTimePicker/CustomDateTimePicker';
 
 interface CalendarComponentProps {
     data: TransactionByMonth[];
     onMonthChange: (newMonth: number, newYear: number) => void;
     onMonthChoose: (newMonth: number, newYear: number) => void;
     isExpanded?: boolean
+    onLongPress?: (day: number, month: number, year: number) => void;
 }
 
 const CalendarComponent = ({
     data,
     isExpanded = true,
-    onMonthChange, onMonthChoose
+    onMonthChange, onMonthChoose,
+    onLongPress
 }: CalendarComponentProps) => {
 
     const today = new Date();
@@ -60,7 +62,7 @@ const CalendarComponent = ({
             duration: 300,
             useNativeDriver: false,
         }).start();
-    }, [isExpanded]);
+    }, [isExpanded, animatedHeight]);
 
     const animatedHeightStyle = {
         height: animatedHeight.interpolate({
@@ -218,8 +220,8 @@ const CalendarComponent = ({
                 {/* Nội dung ẩn để đo chiều cao */}
                 <View
                     ref={contentRef}
-                    style={{ position: 'absolute', opacity: 0, zIndex: -1 }}
                     onLayout={measureContent}
+                    className='absolute opacity-0 -z-10'
                 >
                     <View>
                         {/* Weekday Titles */}
@@ -277,11 +279,14 @@ const CalendarComponent = ({
                                     return <View className='flex-1 p-1 border border-gray-200' />;
                                 }
                                 return (
-                                    <View className='flex-1 p-1 border border-gray-200'>
+                                    <TouchableOpacity
+                                        onLongPress={() => onLongPress && onLongPress(item.day, currentMonth, currentYear)}
+                                        className='flex-1 p-1 border border-gray-200'
+                                    >
                                         <Text className='text-sm font-bold text-white'>{item.day}</Text>
                                         {displayMoney(item.income, 'text-green-500')}
                                         {displayMoney(item.expense, 'text-red-500')}
-                                    </View>
+                                    </TouchableOpacity>
                                 );
                             }}
                         />

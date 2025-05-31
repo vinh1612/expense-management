@@ -2,8 +2,10 @@ import { Image, SafeAreaView, Text, TouchableOpacity, View } from 'react-native'
 import React from 'react';
 import AppScreenEnum from '../../navigation/enums/AppScreenEnum';
 import { MODULE_TITLE } from '../../constants/String';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { ParamListBase } from '@react-navigation/native';
 
-const HomeScreen = ({ navigation }: any) => {
+const HomeScreen = ({ navigation }: NativeStackScreenProps<ParamListBase, AppScreenEnum.HOME_NAVIGATOR>) => {
 
     return (
         <SafeAreaView>

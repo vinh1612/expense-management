@@ -19,7 +19,7 @@ const ModalTransactionSource = ({ sourceDefault, modalVisible, setModalVisible }
         if (modalVisible) {
             setIdSelected(sourceDefault)
         }
-    }, [modalVisible])
+    }, [modalVisible, sourceDefault])
 
     const transactionSource = [
         { id: TRANSACTION_SOURCE.CASH, image: <Image className="w-[60] h-[60]" source={{ uri: `data:image/png;base64,${BASE64_IMAGES.salary}` }} />, title: PAYMENT_METHOD.CASH },

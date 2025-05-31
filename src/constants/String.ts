@@ -56,6 +56,7 @@ export const MENU_TITLE = {
     FINANCE_REPORT: 'Báo cáo tài chính',
     TRANSACTION_ADD: 'Ghi chép giao dịch',
     TRANSACTION_UPDATE: 'Chỉnh sửa giao dịch',
+    TRANSACTION_DETAIL: 'Chi tiết giao dịch',
     TRANSACTION_DELETE: 'Xóa giao dịch',
     CATEGORY_OTHER: 'Danh mục khác',
 }

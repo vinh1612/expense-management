@@ -5,7 +5,7 @@ import CustomDropdown from "../../../components/CustomDropdown";
 import { REPORT_BY, TRANSACTION_TYPE } from "../../../constants/Status";
 import { convertDateFormatToString, parseDateString } from "../../../utils/TimeUtil";
 import CustomMonthYearPicker from "../../../components/CustomMonthYearPicker";
-import CustomDateTimePicker from "../../../components/CustomDateTimePicker";
+import CustomDateTimePicker from "../../../components/DateTimePicker/CustomDateTimePicker";
 import { getWeek } from "date-fns";
 import PieChartComponent from "../../../components/PieChart";
 import EmptyList from "../../../components/EmptyList";
@@ -29,7 +29,7 @@ const ReportScreen = () => {
   const [showDatePicker, setShowDatePicker] = React.useState(false);
   const [reportState, setReportState] = React.useState({
     fromDate: new Date(), toDate: new Date(), date: new Date(),
-    dateString: convertDateFormatToString({ date: new Date(), format: 'MM/YYYY' }),
+    dateString: convertDateFormatToString({ date: new Date(), formatDateString: 'MM/YYYY' }),
   });
   const [totalState, setTotalState] = React.useState({ income: 0, expense: 0 });
   const transactionData = TransactionCache.getInstance.getTransactionCache()
@@ -209,7 +209,7 @@ const ReportScreen = () => {
         : { month: reportState.date.getMonth(), year: reportState.date.getFullYear() }
     const newSection = groupDataByTime({ data: filteredData, ...timeParams })
     transactionsSection.set(newSection)
-  }, [reportState.dateString, filter, filterTime, refreshing])
+  }, [reportState.dateString, filter, filterTime, refreshing, reportState])
 
   React.useEffect(() => {
     if (isInitialRender.current) {
@@ -217,8 +217,8 @@ const ReportScreen = () => {
       return;
     }
     const { categoryMap, totalAmount, totalIncome, totalExpense } = processTransactionData(transactionsSection.array);
-    const barData = handleBarChart({ data: transactionsSection.array, color1: '#FC00A8', color2: '#46BB1D' });
-    const lineData = handleLineChart({ data: transactionsSection.array });
+    const barDataTemp = handleBarChart({ data: transactionsSection.array, color1: '#FC00A8', color2: '#46BB1D' });
+    const lineDataTemp = handleLineChart({ data: transactionsSection.array });
     const newPieData = Array.from(categoryMap).map(([_, item]) => ({
       value: (item.amount / totalAmount) * 100,
       color: item.color,
@@ -240,12 +240,12 @@ const ReportScreen = () => {
     };
     setTotalState(newTotalState);
     setPieData({ data: newPieData, subData: newSubPieData });
-    setBarData(barData);
-    setLineData({ income: lineData.income, expense: lineData.expense });
+    setBarData(barDataTemp);
+    setLineData({ income: lineDataTemp.income, expense: lineDataTemp.expense });
   }, [transactionsSection.array]);
 
   const handleChooseMonthYear = (dateTime: Date) => {
-    const stringDate = convertDateFormatToString({ date: dateTime, format: filterTimeTemp === REPORT_BY.MONTH ? 'MM/YYYY' : 'YYYY' })
+    const stringDate = convertDateFormatToString({ date: dateTime, formatDateString: filterTimeTemp === REPORT_BY.MONTH ? 'MM/YYYY' : 'YYYY' })
     setReportState((prevState) => ({
       ...prevState,
       ...({ date: dateTime, dateString: stringDate })
@@ -322,14 +322,14 @@ const ReportScreen = () => {
     )
   }
 
-  function pieChartSection({ pieData, subPieData }: {
-    pieData: { value: number, color: string, text: string }[],
+  function pieChartSection({ pieDataSection, subPieData }: {
+    pieDataSection: { value: number, color: string, text: string }[],
     subPieData: { color: string, text: string }[]
   }) {
     return (
-      pieData.length === 0 ? <EmptyList /> : (
+      pieDataSection.length === 0 ? <EmptyList /> : (
         <View className='flex flex-col items-center'>
-          <PieChartComponent pieData={pieData} />
+          <PieChartComponent pieData={pieDataSection} />
           <View className="w-full">
             <FlatList
               data={subPieData}
@@ -453,7 +453,7 @@ const ReportScreen = () => {
               }
             </Text>
             {pieChartSection({
-              pieData: pieData.data,
+              pieDataSection: pieData.data,
               subPieData: pieData.subData
             })}
           </View>

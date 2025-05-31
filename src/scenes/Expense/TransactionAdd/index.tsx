@@ -14,13 +14,15 @@ import { showToast } from '../../../utils/ToastUtils';
 import { CATEGORY_TYPE, TRANSACTION_SOURCE } from '../../../constants/Status';
 import ArrowIcon from '../../../assets/svgIcons/ArrowIcon';
 import { getTransactionSourceText } from '../../../utils/StringUtils';
-import CustomDateTimePicker from '../../../components/CustomDateTimePicker';
+import CustomDateTimePicker from '../../../components/DateTimePicker/CustomDateTimePicker';
 import { convertImageAsArrayBuffer } from '../../../utils/ImageUtils';
 import { ACTION_CONTENT, TEXT_STRING, MENU_TITLE, PLACEHOLDER_TITLE, TOAST_MESSAGE } from '../../../constants/String';
 import ModalTransactionType from './modals/ModalTransactionType';
 import ModalTransactionSource from './modals/ModalTransactionSource';
 import ModalAddTransactionOther from './modals/ModalAddTransactionOther';
 import { BASE64_IMAGES } from '../../../storages/Base64Images';
+import { ParamListBase } from '@react-navigation/native';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 interface ViewInputLabel {
   contentLabel: string;
@@ -87,7 +89,7 @@ export function renderViewInputLabel({
   )
 }
 
-const TransactionAddScreen = ({ navigation }: any) => {
+const TransactionAddScreen = ({ navigation }: NativeStackScreenProps<ParamListBase, AppScreenEnum.TRANSACTION_BOOK_ADD_NAVIGATOR>) => {
 
   const [transactionType, setTransactionType] = React.useState(new TransactionCategory({ categoryId: 0 }));
   const [transactionSource, setTransactionSource] = React.useState(TRANSACTION_SOURCE.CASH);
@@ -104,7 +106,7 @@ const TransactionAddScreen = ({ navigation }: any) => {
 
   const handleChooseTime = (dateTime: Date) => {
     setTransactionDate(dateTime)
-    setTransactionTime(convertDateFormatToString({ date: dateTime, format: 'DD/MM/YYYY' }))
+    setTransactionTime(convertDateFormatToString({ date: dateTime, formatDateString: 'DD/MM/YYYY' }))
     setShowDatePicker(false)
   }
 
@@ -126,11 +128,11 @@ const TransactionAddScreen = ({ navigation }: any) => {
   }
 
   function checkValidate(): boolean {
-    if (transactionAmount == 0) {
+    if (transactionAmount === 0) {
       showToast(TOAST_MESSAGE.WARNING.MONEY);
       return false;
     }
-    if (transactionType.categoryId == 0) {
+    if (transactionType.categoryId === 0) {
       showToast(TOAST_MESSAGE.WARNING.CATEGORY);
       return false;
     }

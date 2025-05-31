@@ -55,7 +55,7 @@ const WalletScreen = () => {
     if (isFocused && WalletCache.getInstance.getWalletCache().totalAmount !== wallet.totalAmount) {
       setWallet(WalletCache.getInstance.getWalletCache())
     }
-  }, [isFocused]);
+  }, [isFocused, wallet.totalAmount]);
 
   interface ViewProgressProps {
     progressTitle: string;

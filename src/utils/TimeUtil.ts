@@ -31,8 +31,8 @@ export const convertDateString = (
   }
 };
 
-export const convertDateFormatToString = ({ date, format }: { date: Date, format: string }) => {
-  const dateString = dayjs(date).format(format)
+export const convertDateFormatToString = ({ date, formatDateString }: { date: Date, formatDateString: string }) => {
+  const dateString = dayjs(date).format(formatDateString)
   return dateString;
 };
 

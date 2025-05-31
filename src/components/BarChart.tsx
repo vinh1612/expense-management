@@ -5,6 +5,9 @@ import { formatMoney, formatMoneyWithUnitShort } from '../utils/NumberUtils';
 
 const BarChartComponent = ({ barData }: { barData: barDataItem[] }) => {
 
+    const yAxisTextStyle = { color: 'white' }
+    const xAxisLabelTextStyle = { color: 'white', textAlign: 'center' }
+
     return (
         <BarChart
             isAnimated
@@ -14,17 +17,17 @@ const BarChartComponent = ({ barData }: { barData: barDataItem[] }) => {
             spacing={14}
             xAxisColor={'white'}
             yAxisColor={'white'}
-            yAxisTextStyle={{ color: 'white' }}
-            xAxisLabelTextStyle={{ color: 'white', textAlign: 'center' }}
+            yAxisTextStyle={yAxisTextStyle}
+            xAxisLabelTextStyle={xAxisLabelTextStyle}
             formatYLabel={(value: string) => formatMoneyWithUnitShort(Number(value))}
             yAxisLabelWidth={55}
             maxValue={barData.length > 0 ? Math.max(...barData.map(item => item.value ?? 0)) : 0}
-            renderTooltip={(item: any) => {
+            renderTooltip={(item: barDataItem) => {
                 return (
                     <View
                         className='rounded-md px-2 py-1 bg-[#ffcefe] -mb-5'
                     >
-                        <Text>{formatMoney(item.value)}</Text>
+                        <Text>{formatMoney(item.value ?? 0)}</Text>
                     </View>
                 );
             }}

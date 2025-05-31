@@ -11,8 +11,8 @@ import ModalTransactionType from '../../TransactionAdd/modals/ModalTransactionTy
 import ModalTransactionSource from '../../TransactionAdd/modals/ModalTransactionSource';
 import { convertDateFormatToString, getTodayDate } from '../../../../utils/TimeUtil';
 import { showToast } from '../../../../utils/ToastUtils';
-import CustomDateTimePicker from '../../../../components/CustomDateTimePicker';
-import { ACTION_CONTENT, TEXT_STRING, PLACEHOLDER_TITLE, TOAST_MESSAGE, MODULE_TITLE, MENU_TITLE } from '../../../../constants/String';
+import CustomDateTimePicker from '../../../../components/DateTimePicker/CustomDateTimePicker';
+import { ACTION_CONTENT, TEXT_STRING, PLACEHOLDER_TITLE, TOAST_MESSAGE, MENU_TITLE } from '../../../../constants/String';
 import ModalAddTransactionOther from '../../TransactionAdd/modals/ModalAddTransactionOther';
 import { CATEGORY_TYPE } from '../../../../constants/Status';
 import { BASE64_IMAGES } from '../../../../storages/Base64Images';
@@ -52,11 +52,11 @@ const ModalTransactionUpdate = ({ modalVisible, itemSelected, setModalVisible, s
         const [day, month, year] = itemSelected.createdAt.split('/').map(Number);
         const parsedDate = new Date(year, month - 1, day);
         setTransactionDate(parsedDate)
-    }, [modalVisible])
+    }, [modalVisible, itemSelected])
 
     const handleChooseTime = (dateTime: Date) => {
         setTransactionDate(dateTime)
-        setTransactionTime(convertDateFormatToString({ date: dateTime, format: 'DD/MM/YYYY' }))
+        setTransactionTime(convertDateFormatToString({ date: dateTime, formatDateString: 'DD/MM/YYYY' }))
         setShowDatePicker(false)
     }
 
@@ -66,11 +66,11 @@ const ModalTransactionUpdate = ({ modalVisible, itemSelected, setModalVisible, s
     }
 
     function checkValidate(): boolean {
-        if (transactionAmount == 0) {
+        if (transactionAmount === 0) {
             showToast(TOAST_MESSAGE.WARNING.MONEY);
             return false;
         }
-        if (transactionType.categoryId == 0) {
+        if (transactionType.categoryId === 0) {
             showToast(TOAST_MESSAGE.WARNING.CATEGORY);
             return false;
         }
@@ -164,10 +164,10 @@ const ModalTransactionUpdate = ({ modalVisible, itemSelected, setModalVisible, s
                     setIsIncomeTemp(isIncome)
                     setIsShowModalOther(true)
                 }}
-                setModalVisible={(visible, itemSelected) => {
+                setModalVisible={(visible, itemSelectedModal) => {
                     setIsShowModalType(visible)
-                    if (itemSelected) {
-                        setTransactionType(itemSelected)
+                    if (itemSelectedModal) {
+                        setTransactionType(itemSelectedModal)
                     }
                 }}
                 selectedTransactionCategory={transactionType}

@@ -9,6 +9,7 @@ import {
   SettingScreen,
 } from '../../scenes/Expense';
 import CustomExpenseTabBar from '../../components/CustomExpenseTabBar';
+import React from 'react';
 
 const Tab = createBottomTabNavigator<AppScreenParamList>();
 

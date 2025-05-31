@@ -41,7 +41,7 @@ const ExpenditureComponent = ({ onItemPress, onAddPress, dataDefault }: Expendit
     const addElement = expenditures.array.findIndex((item) => item.categoryId === CATEGORY_TYPE.EXPENSE.ADD_OTHER)
     if (addElement !== -1) { expenditures.removeAt(addElement) }
     expenditures.push(new TransactionCategory({ categoryId: CATEGORY_TYPE.EXPENSE.ADD_OTHER, categoryName: '', categorySource: require('../../../../../assets/icons/plus-blue-2.png') }))
-  }, [])
+  }, [expenditures])
 
   const handleSelected = (selected: TransactionCategory) => {
     if (selected.categoryId !== CATEGORY_TYPE.EXPENSE.ADD_OTHER) {
@@ -74,7 +74,7 @@ const ExpenditureComponent = ({ onItemPress, onAddPress, dataDefault }: Expendit
                   className='w-[60] h-[60]'
                   source={
                     item.categorySource instanceof Object
-                      ? { uri: `data:image/png;base64,${getImageAsBase64(Object.values(item.categorySource) as any)}` }
+                      ? { uri: `data:image/png;base64,${getImageAsBase64(new Uint8Array(Object.values(item.categorySource) as number[]).buffer)}` }
                       : (
                         typeof item.categorySource === 'string'
                           ? { uri: `data:image/png;base64,${item.categorySource}` }

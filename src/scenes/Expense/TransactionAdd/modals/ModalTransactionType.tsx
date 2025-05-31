@@ -8,8 +8,6 @@ import { TransactionCategory } from '../../../../models/Transaction';
 import { showToast } from '../../../../utils/ToastUtils';
 import TabView from '../../../../components/TabViewCustom';
 import { ACTION_CONTENT, TEXT_STRING, TOAST_MESSAGE } from '../../../../constants/String';
-import { CATEGORY_TYPE } from '../../../../constants/Status';
-import { BASE64_IMAGES } from '../../../../storages/Base64Images';
 
 interface ModalTransactionTypeProps {
     modalVisible: boolean;

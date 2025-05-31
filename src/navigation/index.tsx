@@ -29,7 +29,10 @@ const AppNavigation = () => {
 
   if (isShowSplashScreen) {
     return (
-      <Animated.View style={{ flex: 1, opacity: fadeAnim }}>
+      <Animated.View
+        className='flex-1'
+        style={{ opacity: fadeAnim }}
+      >
         <SplashScreen />
       </Animated.View>
     );
@@ -37,11 +40,11 @@ const AppNavigation = () => {
 
   return (
     <NavigationContainer>
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
-          <Stack.Screen name={AppScreenEnum.HOME_NAVIGATOR} component={HomeScreen} />
-          <Stack.Screen name={AppScreenEnum.EXPENSE_NAVIGATOR} component={ExpenseNavigator} />
-          <Stack.Screen name={AppScreenEnum.WAREHOUSE_NAVIGATOR} component={WarehouseNavigator} />
-        </Stack.Navigator>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name={AppScreenEnum.HOME_NAVIGATOR} component={HomeScreen} />
+        <Stack.Screen name={AppScreenEnum.EXPENSE_NAVIGATOR} component={ExpenseNavigator} />
+        <Stack.Screen name={AppScreenEnum.WAREHOUSE_NAVIGATOR} component={WarehouseNavigator} />
+      </Stack.Navigator>
     </NavigationContainer>
   )
 }

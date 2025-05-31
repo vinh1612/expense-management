@@ -36,7 +36,7 @@ const IncomeComponent = ({ onItemPress, onAddPress, dataDefault }: IncomeCompone
     const addElement = incomes.array.findIndex((item) => item.categoryId === CATEGORY_TYPE.INCOME.ADD_OTHER)
     if (addElement !== -1) { incomes.removeAt(addElement) }
     incomes.push(new TransactionCategory({ categoryId: CATEGORY_TYPE.INCOME.ADD_OTHER, categoryName: '', categorySource: require('../../../../../assets/icons/plus-blue-2.png') }))
-  }, [])
+  }, [incomes])
 
   const handleSelected = (selected: TransactionCategory) => {
     if (selected.categoryId !== CATEGORY_TYPE.INCOME.ADD_OTHER) {
@@ -69,7 +69,7 @@ const IncomeComponent = ({ onItemPress, onAddPress, dataDefault }: IncomeCompone
                   className='w-[60] h-[60]'
                   source={
                     item.categorySource instanceof Object
-                      ? { uri: `data:image/png;base64,${getImageAsBase64(Object.values(item.categorySource) as any)}` }
+                      ? { uri: `data:image/png;base64,${getImageAsBase64(new Uint8Array(Object.values(item.categorySource) as number[]).buffer)}` }
                       : (
                         typeof item.categorySource === 'string'
                           ? { uri: `data:image/png;base64,${item.categorySource}` }

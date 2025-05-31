@@ -1,8 +1,17 @@
 import React from 'react'
 import { PieChart, pieDataItem } from "react-native-gifted-charts";
-import { G, Rect, Text as SvgText } from 'react-native-svg';
+import { Text as SvgText } from 'react-native-svg';
 
 const PieChartComponent = ({ pieData }: { pieData: pieDataItem[] }) => {
+
+    const externalLabelComponent = React.useCallback(
+        (item?: pieDataItem) => (
+            <SvgText fill="white" fontSize={12} fontWeight="bold">
+                {item?.text ?? ''}
+            </SvgText>
+        ),
+        []
+    );
 
     return (
         <PieChart
@@ -16,9 +25,7 @@ const PieChartComponent = ({ pieData }: { pieData: pieDataItem[] }) => {
                 labelComponentWidth: 40,
             }}
             extraRadius={60}
-            externalLabelComponent={item => (
-                <SvgText fill={'white'} fontSize={12} fontWeight={'bold'}>{item?.text ?? ''}</SvgText>
-            )}
+            externalLabelComponent={externalLabelComponent}
         />
     )
 }

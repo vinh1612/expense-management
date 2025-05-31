@@ -1,10 +1,13 @@
 import { LineChart, lineDataItem } from "react-native-gifted-charts";
 import { formatMoneyWithUnitShort } from "../utils/NumberUtils";
+import React from "react";
 
 const LineChartComponent = ({ lineData, lineData2, color1, color2 }: {
     lineData: lineDataItem[], lineData2?: lineDataItem[],
     color1: string, color2?: string,
 }) => {
+
+    const textWhiteStyle = { color: 'white' }
 
     return (
         <LineChart
@@ -38,8 +41,8 @@ const LineChartComponent = ({ lineData, lineData2, color1, color2 }: {
             textColor1="white"
             textColor2="white"
             showDataPointLabelOnFocus
-            yAxisTextStyle={{ color: 'white' }}
-            xAxisLabelTextStyle={{ color: 'white' }}
+            yAxisTextStyle={textWhiteStyle}
+            xAxisLabelTextStyle={textWhiteStyle}
             formatYLabel={(value: string) => formatMoneyWithUnitShort(Number(value))}
         />
     );

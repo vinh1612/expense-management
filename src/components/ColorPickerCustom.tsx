@@ -37,14 +37,15 @@ const CustomSlider = ({
     React.useEffect(() => {
         const effectiveTrackWidth = Math.abs(trackWidth - 20);
         setThumbPosition(((value - min) / (max - min)) * effectiveTrackWidth)
-    }, [trackWidth, value]);
+    }, [trackWidth, value, min, max]);
 
     return (
         <View
             className="flex-row items-center justify-between space-x-4"
             onLayout={(e) => {
                 const { width } = e.nativeEvent.layout;
-                const newTrackWidth = width - 16 - 90; {/* 16: space-x-4 (1rem / 16px), 90: max content of title */ }
+                /* 16: space-x-4 (1rem / 16px), 90: max content of title */
+                const newTrackWidth = width - 16 - 90;
                 setTrackWidth(newTrackWidth)
             }}
         >
@@ -92,7 +93,7 @@ const ColorPickerCustom = ({
         setGreenState(initialColor.green ?? 0)
         setBlueState(initialColor.blue ?? 0)
         setOpacityState(initialColor.opacity ?? 0)
-    }, [typeSelected]);
+    }, [typeSelected, initialColor]);
 
     return (
         <View>

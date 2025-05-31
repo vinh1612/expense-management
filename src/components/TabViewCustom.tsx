@@ -38,17 +38,12 @@ const TabView: React.FC<TabViewProps> = ({ tabs, initialIndex }) => {
             duration: 250,
             useNativeDriver: true,
         }).start();
-    }, [selectedIndex, totalWidth]);
+    }, [selectedIndex, totalWidth, underlineAnim]);
 
     const handleTabPress = (index: number) => {
         setSelectedIndex(index);
         pagerRef.current?.setPage(index);
     };
-
-    const translateX = underlineAnim.interpolate({
-        inputRange: [0, tabs.length - 1],
-        outputRange: [0, 100 * (tabs.length - 1)], // Move across the width
-    });
 
     const handleTabLayout = (event: LayoutChangeEvent, index: number) => {
         const { width } = event.nativeEvent.layout;

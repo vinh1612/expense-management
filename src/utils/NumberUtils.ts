@@ -41,7 +41,7 @@ export const removeFormatMoney = (amount: string) => {
     if (amount === '') {
         return 0;
     }
-    return parseInt(amount.replace(/,/g, ''));
+    return parseInt(amount.replace(/,/g, ''), 10);
 }
 
 export const generateId = (): number => {

@@ -2,6 +2,7 @@ import AppScreenEnum from '../enums/AppScreenEnum';
 import AppScreenParamList from '../types/AppScreenParamList';
 import WarehouseScreen from '../../scenes/Warehouse';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import React from 'react';
 
 const Tab = createBottomTabNavigator<AppScreenParamList>();
 
