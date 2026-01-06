@@ -1,26 +1,40 @@
-import { useState } from 'react';
+import React from 'react';
 import { CalendarStyleCache } from '../storages/Storages';
 import { RGBAColorStyle, CalendarStyle } from '../models/CalendarStyle';
 import { showToast } from '../utils/ToastUtils';
 import { TOAST_MESSAGE } from '../constants/String';
 import { CALENDAR_STYLE } from '../constants/Status';
+import { StorageService } from '../services/StorageService';
 
 export const useColorLogic = () => {
-    const colorStyle = CalendarStyleCache.getInstance.getCalendarStyleCache();
 
-    const [showEditColor, setShowEditColor] = useState(false);
-    const [calendarTypeStyle, setCalendarTypeStyle] = useState(CALENDAR_STYLE.THEME);
+    const [colorStyle, setColorStyle] = React.useState<CalendarStyle>(new CalendarStyle());
+    const [showEditColor, setShowEditColor] = React.useState(false);
+    const [calendarTypeStyle, setCalendarTypeStyle] = React.useState(CALENDAR_STYLE.THEME);
 
-    const [backgroundColorReview, setBackgroundColorReview] = useState<RGBAColorStyle>(
+    const [backgroundColorReview, setBackgroundColorReview] = React.useState<RGBAColorStyle>(
         colorStyle.backgroundColor ?? new RGBAColorStyle()
     );
-    const [textColorReview, setTextColorReview] = useState<RGBAColorStyle>(
+    const [textColorReview, setTextColorReview] = React.useState<RGBAColorStyle>(
         colorStyle.textColor ?? new RGBAColorStyle()
     );
-    const [todayDateColorReview, setTodayDateColorReview] = useState<RGBAColorStyle>(
+    const [todayDateColorReview, setTodayDateColorReview] = React.useState<RGBAColorStyle>(
         colorStyle.itemToDayColor ?? new RGBAColorStyle()
     );
-    const [initialColor, setInitialColor] = useState<RGBAColorStyle>(colorStyle.backgroundColor);
+    const [initialColor, setInitialColor] = React.useState<RGBAColorStyle>(colorStyle.backgroundColor);
+
+    React.useEffect(() => {
+        const fetchColorStyle = async () => {
+            const style = await StorageService.getInstance().getCalendarStyleCache();
+            setColorStyle(style);
+            setBackgroundColorReview(style.backgroundColor ?? new RGBAColorStyle());
+            setTextColorReview(style.textColor ?? new RGBAColorStyle());
+            setTodayDateColorReview(style.itemToDayColor ?? new RGBAColorStyle());
+            setInitialColor(style.backgroundColor ?? new RGBAColorStyle());
+        };
+
+        fetchColorStyle();
+    }, []);
 
     const handleReviewColor = (red: number, green: number, blue: number, opacity: number, type: number) => {
         const updatedColor = new RGBAColorStyle({ red, green, blue, opacity });
@@ -38,14 +52,14 @@ export const useColorLogic = () => {
         }
     };
 
-    const handleSaveColor = () => {
+    const handleSaveColor = async () => {
         const newStyle: CalendarStyle = {
             ...colorStyle,
             backgroundColor: backgroundColorReview,
             textColor: textColorReview,
             itemToDayColor: todayDateColorReview,
         };
-        CalendarStyleCache.getInstance.saveCalendarStyleCache(newStyle);
+        await StorageService.getInstance().saveCalendarStyleCache(newStyle);
         setShowEditColor(false);
         showToast(TOAST_MESSAGE.SUCCESS.SAVE_CUSTOMIZE_CALENDAR);
     };

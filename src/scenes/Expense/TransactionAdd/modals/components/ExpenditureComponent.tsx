@@ -41,7 +41,7 @@ const ExpenditureComponent = ({ onItemPress, onAddPress, dataDefault }: Expendit
     const addElement = expenditures.array.findIndex((item) => item.categoryId === CATEGORY_TYPE.EXPENSE.ADD_OTHER)
     if (addElement !== -1) { expenditures.removeAt(addElement) }
     expenditures.push(new TransactionCategory({ categoryId: CATEGORY_TYPE.EXPENSE.ADD_OTHER, categoryName: '', categorySource: require('../../../../../assets/icons/plus-blue-2.png') }))
-  }, [expenditures])
+  }, [dataDefault])
 
   const handleSelected = (selected: TransactionCategory) => {
     if (selected.categoryId !== CATEGORY_TYPE.EXPENSE.ADD_OTHER) {

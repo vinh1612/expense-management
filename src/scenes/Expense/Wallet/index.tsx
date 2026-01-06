@@ -1,11 +1,11 @@
 import { View, Text, SafeAreaView, Animated } from 'react-native'
 import React from 'react'
 import { formatMoney, randomIntFromInterval } from '../../../utils/NumberUtils';
-import { WalletCache } from '../../../storages/Storages';
 import { Wallet } from '../../../models';
 import { useIsFocused } from '@react-navigation/native';
 import FastImage from 'react-native-fast-image';
 import { MENU_TITLE, TEXT_STRING } from '../../../constants/String';
+import { StorageService } from '../../../services/StorageService';
 
 const WalletScreen = () => {
 
@@ -26,7 +26,7 @@ const WalletScreen = () => {
     outputRange: [0, maxWidthExpenditure],
   });
 
-  const setAnimatedProgress = (progress: Animated.Value, forItem: number) => {
+  const setAnimatedProgress = React.useCallback((progress: Animated.Value, forItem: number) => {
     let percentage = 0
     if (forItem > 0) {
       const totalAmount = wallet.totalIncome + wallet.totalExpenditure
@@ -37,24 +37,30 @@ const WalletScreen = () => {
       duration: 2000, // Duration for the animation
       useNativeDriver: false, // Native driver can't handle width, so set this to false
     }).start();
-  }
+  }, [wallet])
 
   React.useEffect(() => {
     if (maxWidthIncome > 0) {
       setAnimatedProgress(progressIncome, wallet.totalIncome)
     }
-  }, [maxWidthIncome, wallet]);
+  }, [maxWidthIncome, wallet, progressIncome, setAnimatedProgress]);
 
   React.useEffect(() => {
     if (maxWidthExpenditure > 0) {
       setAnimatedProgress(progressExpenditure, wallet.totalExpenditure)
     }
-  }, [maxWidthExpenditure, wallet]);
+  }, [maxWidthExpenditure, wallet, progressExpenditure, setAnimatedProgress]);
 
   React.useEffect(() => {
-    if (isFocused && WalletCache.getInstance.getWalletCache().totalAmount !== wallet.totalAmount) {
-      setWallet(WalletCache.getInstance.getWalletCache())
+    async function fetchData() {
+      const storage = StorageService.getInstance();
+      const walletData = await storage.getWalletCache()
+      if (isFocused && walletData.totalAmount !== wallet.totalAmount) {
+        setWallet(walletData)
+      }
     }
+
+    fetchData()
   }, [isFocused, wallet.totalAmount]);
 
   interface ViewProgressProps {

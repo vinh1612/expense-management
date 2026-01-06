@@ -10,7 +10,6 @@ import { getWeek } from "date-fns";
 import PieChartComponent from "../../../components/PieChart";
 import EmptyList from "../../../components/EmptyList";
 import useArray from "../../../hooks/useArray";
-import { TransactionCache } from "../../../storages/Storages";
 import { getDaysInMonth, groupDataByTime } from "../../../utils/DataUtils";
 import { Transaction, TransactionByMonth } from "../../../models/Transaction";
 import { formatMoney, formatMoneyWithUnitShort } from "../../../utils/NumberUtils";
@@ -18,6 +17,7 @@ import BarChartComponent from "../../../components/BarChart";
 import { barDataItem, lineDataItem } from "react-native-gifted-charts";
 import { TEXT_STRING, MENU_TITLE, REPORT_STRING_BY_TIMES } from "../../../constants/String";
 import LineChartComponent from "../../../components/LineChart";
+import { StorageService } from "../../../services/StorageService";
 
 const ReportScreen = () => {
 
@@ -32,10 +32,23 @@ const ReportScreen = () => {
     dateString: convertDateFormatToString({ date: new Date(), formatDateString: 'MM/YYYY' }),
   });
   const [totalState, setTotalState] = React.useState({ income: 0, expense: 0 });
-  const transactionData = TransactionCache.getInstance.getTransactionCache()
-  const transactionsSection = useArray<TransactionByMonth>(
-    groupDataByTime({ data: transactionData, month: new Date().getMonth(), year: new Date().getFullYear() })
-  )
+
+  const transactionsSection = useArray<TransactionByMonth>([])
+
+  React.useEffect(() => {
+    async function fetchDataTransaction() {
+      const storage = StorageService.getInstance();
+      try {
+        const transactionData = await storage.getTransactionCache()
+        const newSection = groupDataByTime({ data: transactionData, month: new Date().getMonth(), year: new Date().getFullYear() })
+        transactionsSection.set(newSection)
+
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    fetchDataTransaction()
+  }, [])
 
   const optionReportTypes = [
     { id: TRANSACTION_TYPE.BOTH, label: TEXT_STRING.ALL },
@@ -197,18 +210,23 @@ const ReportScreen = () => {
 
   React.useEffect(() => {
     if (refreshing) { return }
-    const filteredData = transactionData.filter(item => {
-      if (filter === TRANSACTION_TYPE.INCOME) return item.transactionType.isIncome
-      if (filter === TRANSACTION_TYPE.EXPENSE) return !item.transactionType.isIncome
-      return true
-    })
-    const timeParams = filterTime === REPORT_BY.WEEK
-      ? { fromDate: reportState.fromDate, toDate: reportState.toDate }
-      : filterTime === REPORT_BY.YEAR
-        ? { year: reportState.date.getFullYear() }
-        : { month: reportState.date.getMonth(), year: reportState.date.getFullYear() }
-    const newSection = groupDataByTime({ data: filteredData, ...timeParams })
-    transactionsSection.set(newSection)
+    async function fetchData() {
+      const storage = StorageService.getInstance();
+      const transactionData = await storage.getTransactionCache()
+      const filteredData = transactionData.filter(item => {
+        if (filter === TRANSACTION_TYPE.INCOME) return item.transactionType.isIncome
+        if (filter === TRANSACTION_TYPE.EXPENSE) return !item.transactionType.isIncome
+        return true
+      })
+      const timeParams = filterTime === REPORT_BY.WEEK
+        ? { fromDate: reportState.fromDate, toDate: reportState.toDate }
+        : filterTime === REPORT_BY.YEAR
+          ? { year: reportState.date.getFullYear() }
+          : { month: reportState.date.getMonth(), year: reportState.date.getFullYear() }
+      const newSection = groupDataByTime({ data: filteredData, ...timeParams })
+      transactionsSection.set(newSection)
+    }
+    fetchData()
   }, [reportState.dateString, filter, filterTime, refreshing, reportState])
 
   React.useEffect(() => {

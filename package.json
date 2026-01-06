@@ -10,9 +10,11 @@
     "clean": "watchman watch-del-all && npm cache clean --f && cd android && ./gradlew clean && cd ..",
     "test": "jest",
     "release-android": "cd android && ./gradlew clean && ./gradlew assembleRelease && cd ..",
-    "reset-gitignore": "git rm -r --cached . && git add ."
+    "reset-gitignore": "git rm -r --cached . && git add .",
+    "reinstall": "rm -rf node_modules package-lock.json && npm install"
   },
   "dependencies": {
+    "@react-native-async-storage/async-storage": "^1.24.0",
     "@react-navigation/bottom-tabs": "^7.2.0",
     "@react-navigation/material-top-tabs": "^7.1.0",
     "@react-navigation/native": "^7.0.14",
@@ -25,10 +27,10 @@
     "react-native-fast-image": "^8.6.3",
     "react-native-gifted-charts": "^1.4.56",
     "react-native-linear-gradient": "^2.8.3",
-    "react-native-mmkv": "^3.2.0",
     "react-native-pager-view": "^6.7.0",
     "react-native-safe-area-context": "^5.2.0",
     "react-native-screens": "^4.6.0",
+    "react-native-sqlite-storage": "^6.0.1",
     "react-native-svg": "^15.11.1",
     "react-native-tab-view": "^4.0.5",
     "tailwindcss": "3.3.2"
@@ -45,6 +47,7 @@
     "@react-native/metro-config": "0.76.5",
     "@react-native/typescript-config": "0.76.5",
     "@types/react": "^18.2.6",
+    "@types/react-native-sqlite-storage": "^6.0.5",
     "@types/react-test-renderer": "^18.0.0",
     "babel-jest": "^29.6.3",
     "eslint": "^8.19.0",

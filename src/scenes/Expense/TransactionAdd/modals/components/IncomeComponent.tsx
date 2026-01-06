@@ -34,9 +34,9 @@ const IncomeComponent = ({ onItemPress, onAddPress, dataDefault }: IncomeCompone
 
   React.useEffect(() => {
     const addElement = incomes.array.findIndex((item) => item.categoryId === CATEGORY_TYPE.INCOME.ADD_OTHER)
-    if (addElement !== -1) { incomes.removeAt(addElement) }
+    if (addElement !== -1) { incomes.removeAt(addElement); }
     incomes.push(new TransactionCategory({ categoryId: CATEGORY_TYPE.INCOME.ADD_OTHER, categoryName: '', categorySource: require('../../../../../assets/icons/plus-blue-2.png') }))
-  }, [incomes])
+  }, [dataDefault])
 
   const handleSelected = (selected: TransactionCategory) => {
     if (selected.categoryId !== CATEGORY_TYPE.INCOME.ADD_OTHER) {

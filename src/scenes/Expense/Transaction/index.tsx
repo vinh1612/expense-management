@@ -1,7 +1,6 @@
 import {
   View, SafeAreaView, FlatList,
-  Pressable, Animated, Easing,
-  Text
+  Pressable, Animated, Easing
 } from 'react-native'
 import React from 'react'
 import useArray from '../../../hooks/useArray';
@@ -18,6 +17,7 @@ import { groupDataByTime } from '../../../utils/DataUtils';
 import { TOAST_MESSAGE } from '../../../constants/String';
 import ModalTransactionDetail from './modals/ModalTransactionDetail';
 import TransactionListSection from './components/TransactionListSection';
+import { StorageService } from '../../../services/StorageService';
 
 const TransactionScreen = () => {
 
@@ -40,22 +40,32 @@ const TransactionScreen = () => {
 
   const rotateAnim = React.useRef(new Animated.Value(isRotated ? 1 : 0)).current;
 
-  const transactions = useArray<Transaction>(TransactionCache.getInstance.getTransactionCache())
-  const transactionsSection = useArray<TransactionByMonth>(
-    groupDataByTime({ data: TransactionCache.getInstance.getTransactionCache(), month: currentMonth, year: currentYear })
-  )
-
-  const getDataTransaction = React.useCallback(() => {
-    transactions.set(TransactionCache.getInstance.getTransactionCache())
-    transactionsSection.set(
-      groupDataByTime({ data: TransactionCache.getInstance.getTransactionCache(), month: currentMonth, year: currentYear })
-    )
-  }, [currentMonth, currentYear, transactions, transactionsSection])
+  const transactions = useArray<Transaction>([])
+  const transactionsSection = useArray<TransactionByMonth>([])
 
   React.useEffect(() => {
-    if (isFocused && TransactionCache.getInstance.getTransactionCache().length !== transactions.array.length) {
-      getDataTransaction()
+    const fetchTransactions = async () => {
+      const data = await StorageService.getInstance().getTransactionCache();
+      transactions.set(data);
+      transactionsSection.set(groupDataByTime({ data, month: currentMonth, year: currentYear }));
+    };
+    if (isFocused) fetchTransactions();
+  }, [isFocused, currentMonth, currentYear]);
+
+  const getDataTransaction = React.useCallback(async () => {
+    const data = await StorageService.getInstance().getTransactionCache();
+    transactions.set(data);
+    transactionsSection.set(groupDataByTime({ data, month: currentMonth, year: currentYear }));
+  }, [currentMonth, currentYear, transactions, transactionsSection]);
+
+  React.useEffect(() => {
+    const fetchTransactions = async () => {
+      const data = await StorageService.getInstance().getTransactionCache();
+      if (isFocused && data.length !== transactions.array.length) {
+        getDataTransaction()
+      }
     }
+    fetchTransactions()
   }, [isFocused, transactions.array.length, getDataTransaction])
 
   React.useEffect(() => {
@@ -73,20 +83,20 @@ const TransactionScreen = () => {
     transactionsSection.set(groupDataByTime({ data: transactions.array, month: newMonth, year: newYear }));
   };
 
-  const handDeleteTransaction = (transactionId: number) => {
-    showToast(TOAST_MESSAGE.SUCCESS.DELETE_TRANSACTION)
-    TransactionCache.getInstance.removeTransactionWith(transactionId)
-    getDataTransaction()
-    setItemSelected(new Transaction({ transactionId: 0 }))
-  }
+  const handDeleteTransaction = async (transactionId: number) => {
+    await StorageService.getInstance().removeTransactionWith(transactionId);
+    showToast(TOAST_MESSAGE.SUCCESS.DELETE_TRANSACTION);
+    await getDataTransaction();
+    setItemSelected(new Transaction({ transactionId: 0 }));
+  };
 
-  const handUpdateTransaction = (newTransaction: Transaction) => {
-    showToast(TOAST_MESSAGE.SUCCESS.UPDATE_TRANSACTION)
-    TransactionCache.getInstance.updateTransactionWith(newTransaction)
-    getDataTransaction()
-    setItemSelected(new Transaction({ transactionId: 0 }))
-    setModalDetailVisible(false)
-  }
+  const handUpdateTransaction = async (newTransaction: Transaction) => {
+    await StorageService.getInstance().updateTransactionWith(newTransaction);
+    showToast(TOAST_MESSAGE.SUCCESS.UPDATE_TRANSACTION);
+    await getDataTransaction();
+    setItemSelected(new Transaction({ transactionId: 0 }));
+    setModalDetailVisible(false);
+  };
 
   return (
     <SafeAreaView className='bg-gray-900'>

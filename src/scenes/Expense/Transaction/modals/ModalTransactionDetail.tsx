@@ -6,6 +6,7 @@ import TransactionListSection from "../components/TransactionListSection";
 import { Transaction, TransactionByMonth } from "../../../../models";
 import { TransactionCache } from "../../../../storages/Storages";
 import { groupDataByTime } from "../../../../utils/DataUtils";
+import { StorageService } from "../../../../services/StorageService";
 
 interface Props {
     isShowModalDetail: boolean;
@@ -23,13 +24,18 @@ const ModalTransactionDetail = ({
 
     React.useEffect(() => {
         if (!isShowModalDetail) { return }
-        const groupedData = groupDataByTime({
-            data: TransactionCache.getInstance.getTransactionCache(),
-            day: dataTime.day,
-            month: dataTime.month,
-            year: dataTime.year
-        });
-        setTransactionsSection(groupedData);
+        async function fetchData() {
+            const transactionData = await StorageService.getInstance().getTransactionCache()
+            const groupedData = groupDataByTime({
+                data: transactionData,
+                day: dataTime.day,
+                month: dataTime.month,
+                year: dataTime.year
+            });
+            setTransactionsSection(groupedData);
+        }
+
+        fetchData()
     }, [isShowModalDetail, dataTime])
 
     const handleCloseModal = () => {

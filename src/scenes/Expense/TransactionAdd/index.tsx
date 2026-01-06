@@ -6,7 +6,6 @@ import {
 import React from 'react'
 import { convertDateFormatToString, getTodayDate } from '../../../utils/TimeUtil';
 import { TransactionCategory, Transaction } from '../../../models/Transaction';
-import { TransactionCache } from '../../../storages/Storages';
 import { formatMoney, removeFormatMoney } from '../../../utils/NumberUtils';
 import AppScreenEnum from '../../../navigation/enums/AppScreenEnum';
 import ButtonComponent from '../../../components/Button';
@@ -23,6 +22,7 @@ import ModalAddTransactionOther from './modals/ModalAddTransactionOther';
 import { BASE64_IMAGES } from '../../../storages/Base64Images';
 import { ParamListBase } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { StorageService } from '../../../services/StorageService';
 
 interface ViewInputLabel {
   contentLabel: string;
@@ -110,7 +110,7 @@ const TransactionAddScreen = ({ navigation }: NativeStackScreenProps<ParamListBa
     setShowDatePicker(false)
   }
 
-  const handleSaveTransaction = () => {
+  const handleSaveTransaction = async () => {
     if (!checkValidate()) { return }
     const newTransactionType = transactionType
     newTransactionType.categorySource = convertImageAsArrayBuffer(transactionType.categorySource as string)
@@ -121,8 +121,8 @@ const TransactionAddScreen = ({ navigation }: NativeStackScreenProps<ParamListBa
       createdAt: transactionTime,
       transactionNote: transactionNote
     })
+    await StorageService.getInstance().pushTransaction(newTransaction);
     showToast(transactionType.isIncome ? TOAST_MESSAGE.SUCCESS.ADD_TRANSACTION_INCOME : TOAST_MESSAGE.SUCCESS.ADD_TRANSACTION_EXPENSE);
-    TransactionCache.getInstance.pushTransaction(newTransaction)
     handleClearData()
     navigation.navigate(AppScreenEnum.TRANSACTION_BOOK_NAVIGATOR)
   }
